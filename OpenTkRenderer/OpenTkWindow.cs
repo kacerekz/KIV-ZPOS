@@ -79,7 +79,7 @@ namespace OpenTkRenderer
             }
 
             Location = new Point(0, 0);
-            CursorVisible = false;
+            //CursorVisible = false;
         }
 
         /// <summary>
