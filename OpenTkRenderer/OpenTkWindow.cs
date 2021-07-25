@@ -11,6 +11,7 @@ using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
 
 using OpenTkRenderer.Input;
+using OpenTkRenderer.Util;
 
 namespace OpenTkRenderer
 {
@@ -140,10 +141,7 @@ namespace OpenTkRenderer
             if (!Focused) return;
 
             InputManager.UpdateState();
-
-            // Time.Update();
-            // FPSCounter.Update();
-            // Title = $"{FPSCounter.GetFPS()} FPS";
+            
             //Scene s = SceneManager.ActiveScene();
             //var mouse = Mouse.GetCursorState();
             //s.camera.Yaw((float)((mouse.X - mouseLastX) * e.Time));
@@ -159,6 +157,11 @@ namespace OpenTkRenderer
         /// <param name="e">Event data</param>
         protected override void OnRenderFrame(FrameEventArgs e)
         {
+            Time.Update();
+            FPSCounter.Update();
+            FPSCounter.PrintFPS();
+            
+
             Context.SwapBuffers();
             base.OnRenderFrame(e);
         }

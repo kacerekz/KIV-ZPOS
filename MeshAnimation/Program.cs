@@ -37,12 +37,20 @@ namespace MeshAnimation
             }
         }
 
+        /// <summary>
+        /// Run in render mode
+        /// </summary>
+        /// <param name="config">Settings</param>
         private static void Render(Config config)
         {
             var window = new OpenTkWindow(config.windowWidth, config.windowHeight, "MeshAnimation");
             window.Run(config.updatesPerSecond, config.framesPerSecond);
         }
 
+        /// <summary>
+        /// Run in processing mode
+        /// </summary>
+        /// <param name="config">Settings</param>
         private static void Process(Config config)
         {
             Console.WriteLine("Processing mode not implemented.");
