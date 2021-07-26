@@ -11,6 +11,7 @@ using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
 
 using OpenTkRenderer.Input;
+using OpenTkRenderer.Rendering.Scenes;
 using OpenTkRenderer.Util;
 
 namespace OpenTkRenderer
@@ -89,7 +90,8 @@ namespace OpenTkRenderer
         /// <param name="state">Keyboard state</param>
         public void Update(IDictionary<string, bool> state)
         {
-            if (state["Exit"]) Exit();
+            if (state.ContainsKey("Exit") && state["Exit"]) 
+                Exit();
         }
 
         /// <summary>
@@ -100,7 +102,7 @@ namespace OpenTkRenderer
         {
             Context.SwapInterval = 0;
 
-            GL.ClearColor(1, 0, 0, 1);
+            GL.ClearColor(0.05f, 0.05f, 0.05f, 1.0f);
             GL.Enable(EnableCap.DepthTest);
             GL.Enable(EnableCap.CullFace);
             GL.CullFace(CullFaceMode.Back);
@@ -119,15 +121,15 @@ namespace OpenTkRenderer
             GL.Viewport(0, 0, Width, Height);
             GL.LoadIdentity();
 
-            //Scene s = SceneManager.ActiveScene();
+            Scene s = SceneManager.ActiveScene;
 
-            //float far = s.camera.settings.Far;
-            //float near = s.camera.settings.Near;
-            //float horiz = s.camera.settings.HFOV;
-            //float vert = horiz * Height / Width;
+            float far = s.camera.settings.Far;
+            float near = s.camera.settings.Near;
+            float horiz = s.camera.settings.HFOV;
+            float vert = horiz * Height / Width;
 
-            //GL.Frustum(-near * horiz, near * horiz, -near * vert, near * vert, near, far);
-            //s.camera.projection = Matrix4.CreatePerspectiveOffCenter(-near * horiz, near * horiz, -near * vert, near * vert, near, far);
+            GL.Frustum(-near * horiz, near * horiz, -near * vert, near * vert, near, far);
+            s.camera.projection = Matrix4.CreatePerspectiveOffCenter(-near * horiz, near * horiz, -near * vert, near * vert, near, far);
 
             base.OnResize(e);
         }
@@ -160,7 +162,12 @@ namespace OpenTkRenderer
             Time.Update();
             FPSCounter.Update();
             FPSCounter.PrintFPS();
+
+            var renderPass = SceneManager.RenderPass;
+            var scene = SceneManager.ActiveScene;
             
+            GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
+            renderPass.Render(scene);
 
             Context.SwapBuffers();
             base.OnRenderFrame(e);

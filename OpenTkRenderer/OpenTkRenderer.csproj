@@ -49,13 +49,41 @@
     <Compile Include="Input\InputManager.cs" />
     <Compile Include="OpenTkWindow.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Structs\PositionColor.cs" />
+    <Compile Include="Rendering\AttribInfo.cs" />
+    <Compile Include="Rendering\Cameras\Camera.cs" />
+    <Compile Include="Rendering\Cameras\CameraSettings.cs" />
+    <Compile Include="Rendering\Cameras\FlyCamera.cs" />
+    <Compile Include="Rendering\Materials\BasicMaterial.cs" />
+    <Compile Include="Rendering\Meshes\BasicMesh.cs" />
+    <Compile Include="Rendering\Framebuffer.cs" />
+    <Compile Include="Rendering\GameObject.cs" />
+    <Compile Include="Rendering\Light.cs" />
+    <Compile Include="Rendering\Materials\Material.cs" />
+    <Compile Include="Rendering\Meshes\Mesh.cs" />
+    <Compile Include="Rendering\Meshes\MeshLoader.cs" />
+    <Compile Include="Rendering\Meshes\ObjLoader.cs" />
+    <Compile Include="Rendering\RenderPass.cs" />
+    <Compile Include="Rendering\Scenes\Scene.cs" />
+    <Compile Include="Rendering\Scenes\SceneManager.cs" />
+    <Compile Include="Rendering\Shader.cs" />
+    <Compile Include="Rendering\ShaderProgram.cs" />
+    <Compile Include="Rendering\UniformInfo.cs" />
+    <Compile Include="Structs\Vec2f.cs" />
+    <Compile Include="Structs\Vec3i.cs" />
     <Compile Include="Util\FPSCounter.cs" />
     <Compile Include="Util\Time.cs" />
+    <Compile Include="Structs\Vec3f.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="OpenTK.dll.config" />
     <None Include="packages.config" />
+    <None Include="Shaders\basic.frag">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Shaders\basic.vert">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
