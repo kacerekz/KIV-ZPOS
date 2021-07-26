@@ -56,7 +56,7 @@ namespace OpenTkRenderer.Rendering.Cameras
             this.yaw = (float)Math.Atan2(forward.Z, forward.X);
             this.pitch = 0;
 
-            this.baseSpeed = 0.1f;
+            this.baseSpeed = 0.05f;
 
             UpdateView();
         }

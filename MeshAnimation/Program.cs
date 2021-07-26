@@ -13,6 +13,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+
+/*
+ * Something is weird with the ligting and shadows, either the shadow buffer is just not working or i am forgetting something
+ * It might also be unstable - after editing a shader I lost all image & "fixed it" by redoing some edits so no idea what happened there
+ */
+
+
 namespace MeshAnimation
 {
     /// <summary>
@@ -26,6 +33,8 @@ namespace MeshAnimation
         /// <param name="args">Command line arguments</param>
         static void Main(string[] args)
         {
+            System.Threading.Thread.CurrentThread.CurrentCulture = new System.Globalization.CultureInfo("en-US");
+
             var pathToConfigFile = (args.Length == 0) ? "config.xml" : args[0];
             
             var config = File.Exists(pathToConfigFile)

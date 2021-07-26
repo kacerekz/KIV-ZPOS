@@ -24,7 +24,7 @@ namespace MeshAnimation
         /// <summary>
         /// Window FPS cap
         /// </summary>
-        public int framesPerSecond = 0;
+        public int framesPerSecond = 100;
 
         /// <summary>
         /// Window update frequency

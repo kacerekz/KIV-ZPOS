@@ -26,7 +26,6 @@ in vec4[1] lightPos;
 in vec3 positionEye;
 in vec3 normalEye;
 
-
 float ShadowTest(vec4 positionLight, int layer) 
 {
     // move so we get rid of "texture" in shadows = shadow map acne
