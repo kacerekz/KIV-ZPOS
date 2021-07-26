@@ -27,33 +27,43 @@ in vec3 positionEye;
 in vec3 normalEye;
 
 
-float ShadowTest(vec4 positionLight, int layer) {
-    vec3 size = textureSize(shadowTex,0)/3.1;
-    vec3 shadowCoords = (positionLight.xyz - vec3(0,0,0.01))/positionLight.w;
-    shadowCoords = shadowCoords * 0.5 + 0.5;
+float ShadowTest(vec4 positionLight, int layer) 
+{
+    // move so we get rid of "texture" in shadows = shadow map acne
+	// if offset too big -> some objects wont have a shadow
+	vec3 shadowCoords = (positionLight.xyz-vec3(0,0,0.005))/positionLight.w;
+	shadowCoords = shadowCoords* 0.5 + 0.5;
 
-    float c = cos(positionLight.length*100);
-    float s = sin(positionLight.length*100);
-    mat3 rotZ = mat3(c, -s, 0, s, c, 0, 0, 0, 1);
+	vec3 size = textureSize(shadowTex, 0) / 3.1;
 
-    vec3 poissonDisk[8];
-    poissonDisk[0] = rotZ*vec3(-0.613392/size.x, 0.617481/size.y,0);
-    poissonDisk[1] = rotZ*vec3(0.170019/size.x, -0.040254/size.y,0);
-    poissonDisk[2] = rotZ*vec3(-0.299417/size.x, 0.791925/size.y,0);
-    poissonDisk[3] = rotZ*vec3(0.645680/size.x, 0.493210/size.y,0);
-    poissonDisk[4] = rotZ*vec3(-0.651784/size.x, 0.717887/size.y,0);
-    poissonDisk[5] = rotZ*vec3(0.421003/size.x, 0.027070/size.y,0);
-    poissonDisk[6] = rotZ*vec3(-0.817194/size.x, -0.271096/size.y,0);
-    poissonDisk[7] = rotZ*vec3(-0.705374/size.x, -0.668203/size.y,0);
+	// need every time different angle
+	float c = cos(positionLight.length*100);
+	float s = sin(positionLight.length*100);
+	mat3 rotZ = mat3(c, -s, 0, s, c, 0, 0, 0, 1);
 
-    float lightDepth = 0;
-    for(int s=0; s<poissonDisk.length; s++) {
-        vec4 coord;
-        coord.xyw = shadowCoords.xyz+poissonDisk[s];
-        coord.z = layer;
-        lightDepth += texture(shadowTex, coord);
-    }
-    return lightDepth/poissonDisk.length;
+	vec3 poissonDisk[8];
+	poissonDisk[0] = rotZ * vec3(-0.613392 / size.x, 0.617481 / size.y, 0);
+	poissonDisk[1] = rotZ * vec3(0.170019 / size.x, -0.040254 / size.y, 0);
+	poissonDisk[2] = rotZ * vec3(-0.299417 / size.x, 0.791925 / size.y, 0);
+	poissonDisk[3] = rotZ * vec3(0.645680 / size.x, 0.493210 / size.y, 0);
+	poissonDisk[4] = rotZ * vec3(-0.651784 / size.x, 0.717887 / size.y, 0);
+	poissonDisk[5] = rotZ * vec3(0.421003 / size.x, 0.027070 / size.y, 0);
+	poissonDisk[6] = rotZ * vec3(-0.817194 / size.x, -0.271096 / size.y, 0);
+	poissonDisk[7] = rotZ * vec3(-0.705374 / size.x, -0.668203 / size.y, 0);
+
+	// want to rotate the samples
+
+	// returns distance from light compared to neighbors, looks at 4 neighbors
+	// now using poissonDisk sampling
+	float lightDepth = 0;
+	for (int s = 0; s < poissonDisk.length;s++) {
+		vec4 coord;
+		coord.xyw = shadowCoords.xyz + poissonDisk[s];
+		coord.z = layer;
+		lightDepth += texture(shadowTex, coord);
+	}
+	
+	return lightDepth/poissonDisk.length;
 }
 
 void main() 

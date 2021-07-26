@@ -38,7 +38,7 @@ namespace OpenTkRenderer.Rendering.Materials
             for (int i = 0; i < scene.activeLights.Count; i++)
             {
                 // OpenTK matrices are transposed ? -> multiply in opposite order ?
-                Light l = scene.activeLights.ElementAt(i);
+                Light l = scene.activeLights[i];
                 Matrix4 lightMatrix = l.BuildViewMatrix() * l.BuildProjectionMatrix();
 
                 shaderProgram.RegisterUniform($"light[{i}].position");
@@ -75,7 +75,7 @@ namespace OpenTkRenderer.Rendering.Materials
             shaderProgram.RegisterUniform("shadowTex");
 
             GL.Uniform1(shaderProgram.uniforms["shadowTex"].Location, 0);
-            GL.ActiveTexture(TextureUnit.Texture4);
+            GL.ActiveTexture(TextureUnit.Texture0);
             GL.BindTexture(TextureTarget.Texture2DArray, scene.shadowBuffer.depthBuffer);
         }
 
