@@ -67,15 +67,15 @@ namespace MeshAnimation
 
             var light = new Light(
                 // position
-                new Vector3(0.0f, 3.0f, -5.0f),
+                new Vector3(5.0f, 5.0f, -5.0f),
                 // direction
-                new Vector3(0.0f, -1.0f, 0.0f));
+                new Vector3(-1.0f, -1.0f, 1.0f));
 
             light.SetParameters(
                 // ambient
                 new Vector3(0.0f, 0.1f, 0.1f),
                 // diffuse
-                new Vector3(1.0f, 1.0f, 1.0f),
+                new Vector3(0.8f, 0.8f, 0.8f),
                 // specular
                 new Vector3(0.2f, 0.2f, 0.2f));
 

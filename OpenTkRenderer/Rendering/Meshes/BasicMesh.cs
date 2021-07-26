@@ -89,7 +89,7 @@ namespace OpenTkRenderer.Rendering.Meshes
 
                 GL.EnableVertexAttribArray(2);
                 GL.VertexAttribPointer(2, 3, VertexAttribPointerType.Float, false,
-                    0, (IntPtr)(vertices.Length * offset));
+                    0, (IntPtr)(offset));
 
                 offset += normals.Length * 3 * sizeof(float);
             }
@@ -104,7 +104,7 @@ namespace OpenTkRenderer.Rendering.Meshes
 
                 GL.EnableVertexAttribArray(3);
                 GL.VertexAttribPointer(3, 3, VertexAttribPointerType.Float, false,
-                    0, (IntPtr)(vertices.Length * offset));
+                    0, (IntPtr)(offset));
 
                 offset += colors.Length * 3 * sizeof(float);
             }
@@ -119,7 +119,7 @@ namespace OpenTkRenderer.Rendering.Meshes
 
                 GL.EnableVertexAttribArray(8);
                 GL.VertexAttribPointer(8, 2, VertexAttribPointerType.Float, false,
-                    0, (IntPtr)(vertices.Length * offset));
+                    0, (IntPtr)(offset));
 
                 //offset += texCoords.Length * 2 * sizeof(float);
             }

@@ -176,6 +176,8 @@ namespace OpenTkRenderer
             var shadowBuffer = scene.shadowBuffer;
             var sceneCamera = scene.camera;
 
+            GL.Disable(EnableCap.CullFace);
+
             for (int i = 0; i < Scene.MAX_LIGHTS; i++)
             {
                 GL.BindFramebuffer(FramebufferTarget.Framebuffer, shadowBuffer.ID);
@@ -203,6 +205,7 @@ namespace OpenTkRenderer
 
             // Render scene with shadows
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
+            GL.Enable(EnableCap.CullFace);
             GL.DrawBuffer(DrawBufferMode.Back);
             GL.Viewport(0, 0, Width, Height);
             renderPass.Render(scene);
