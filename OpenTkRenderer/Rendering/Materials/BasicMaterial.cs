@@ -34,6 +34,49 @@ namespace OpenTkRenderer.Rendering.Materials
             GL.UniformMatrix4(shaderProgram.uniforms["matrixProjection"].Location, false, ref scene.camera.projection);
             GL.UniformMatrix4(shaderProgram.uniforms["matrixView"].Location, false, ref scene.camera.view);
             GL.UniformMatrix4(shaderProgram.uniforms["matrixModel"].Location, false, ref model);
+
+            for (int i = 0; i < scene.activeLights.Count; i++)
+            {
+                // OpenTK matrices are transposed ? -> multiply in opposite order ?
+                Light l = scene.activeLights.ElementAt(i);
+                Matrix4 lightMatrix = l.BuildViewMatrix() * l.BuildProjectionMatrix();
+
+                shaderProgram.RegisterUniform($"light[{i}].position");
+                shaderProgram.RegisterUniform($"light[{i}].direction");
+
+                shaderProgram.RegisterUniform($"light[{i}].ambient");
+                shaderProgram.RegisterUniform($"light[{i}].diffuse");
+                shaderProgram.RegisterUniform($"light[{i}].specular");
+
+                shaderProgram.RegisterUniform($"light[{i}].linear");
+                shaderProgram.RegisterUniform($"light[{i}].quadratic");
+
+                shaderProgram.RegisterUniform($"light[{i}].cutoff");
+                shaderProgram.RegisterUniform($"light[{i}].outerCutoff");
+
+                shaderProgram.RegisterUniform($"light[{i}].matrix");
+
+                GL.Uniform3(shaderProgram.uniforms[$"light[{i}].position"].Location, l.position);
+                GL.Uniform3(shaderProgram.uniforms[$"light[{i}].direction"].Location, l.direction);
+
+                GL.Uniform3(shaderProgram.uniforms[$"light[{i}].ambient"].Location, l.ambient);
+                GL.Uniform3(shaderProgram.uniforms[$"light[{i}].diffuse"].Location, l.diffuse);
+                GL.Uniform3(shaderProgram.uniforms[$"light[{i}].specular"].Location, l.specular);
+
+                GL.Uniform1(shaderProgram.uniforms[$"light[{i}].linear"].Location, l.linear);
+                GL.Uniform1(shaderProgram.uniforms[$"light[{i}].quadratic"].Location, l.quadratic);
+
+                GL.Uniform1(shaderProgram.uniforms[$"light[{i}].cutoff"].Location, l.cutoff);
+                GL.Uniform1(shaderProgram.uniforms[$"light[{i}].outerCutoff"].Location, l.outerCutoff);
+
+                GL.UniformMatrix4(shaderProgram.uniforms[$"light[{i}].matrix"].Location, false, ref lightMatrix);
+            }
+
+            shaderProgram.RegisterUniform("shadowTex");
+
+            GL.Uniform1(shaderProgram.uniforms["shadowTex"].Location, 0);
+            GL.ActiveTexture(TextureUnit.Texture4);
+            GL.BindTexture(TextureTarget.Texture2DArray, scene.shadowBuffer.depthBuffer);
         }
 
         /// <summary>

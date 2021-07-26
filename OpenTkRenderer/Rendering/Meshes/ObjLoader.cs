@@ -24,6 +24,7 @@ namespace OpenTkRenderer.Rendering.Meshes
             using (StreamReader sr = new StreamReader(filename))
             {
                 List<Vec3f> vertices = new List<Vec3f>();
+                List<Vec3f> normals = new List<Vec3f>();
                 List<Vec3i> indices = new List<Vec3i>();
 
                 while (!sr.EndOfStream)
@@ -43,14 +44,42 @@ namespace OpenTkRenderer.Rendering.Meshes
                             vertices.Add(v);
                             break;
 
-                        case "f":
-                            var f = new Vec3i
+                        case "vn":
+                            var vn = new Vec3f
                             {
-                                v1 = uint.Parse(split[1]) - 1,
-                                v2 = uint.Parse(split[2]) - 1,
-                                v3 = uint.Parse(split[3]) - 1
+                                x = float.Parse(split[1]),
+                                y = float.Parse(split[2]),
+                                z = float.Parse(split[3])
                             };
-                            indices.Add(f);
+                            normals.Add(vn);
+                            break;
+
+                        case "f":
+                            if (line.Contains("/"))
+                            {
+                                var splitx = split[1].Split('/');
+                                var splity = split[1].Split('/');
+                                var splitz = split[1].Split('/');
+
+                                var f = new Vec3i
+                                {
+                                    v1 = uint.Parse(splitx[0]) - 1,
+                                    v2 = uint.Parse(splity[0]) - 1,
+                                    v3 = uint.Parse(splitz[0]) - 1
+                                };
+                                indices.Add(f);
+                            }
+                            else
+                            {
+                                var f = new Vec3i
+                                {
+                                    v1 = uint.Parse(split[1]) - 1,
+                                    v2 = uint.Parse(split[2]) - 1,
+                                    v3 = uint.Parse(split[3]) - 1
+                                };
+                                indices.Add(f);
+                            }
+                            
                             break;
                         
                         default:
@@ -59,6 +88,7 @@ namespace OpenTkRenderer.Rendering.Meshes
                 } // end while !EOF
 
                 Vertices = vertices.ToArray();
+                Normals = normals.ToArray();
                 Indices = indices.ToArray();
 
             } // end using

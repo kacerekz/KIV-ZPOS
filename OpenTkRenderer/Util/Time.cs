@@ -20,12 +20,12 @@ namespace OpenTkRenderer.Util
         /// <summary>
         /// Time of last update
         /// </summary>
-        private static long lastTime;
+        private static long lastTime, lastRenderTime;
 
         /// <summary>
         /// Difference in time between current and last update
         /// </summary>
-        public static long deltaTime;
+        public static long deltaTime, deltaRenderTime;
 
         /// <summary>
         /// Static initialization of stopwatch used to track time since application launch
@@ -54,5 +54,13 @@ namespace OpenTkRenderer.Util
             lastTime = stopwatch.ElapsedMilliseconds;
         }
 
+        /// <summary>
+        /// Tracks time difference since last render
+        /// </summary>
+        public static void UpdateRenderTime()
+        {
+            deltaRenderTime = stopwatch.ElapsedMilliseconds - lastRenderTime;
+            lastRenderTime = stopwatch.ElapsedMilliseconds;
+        }
     }
 }

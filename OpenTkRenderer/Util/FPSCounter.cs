@@ -31,7 +31,7 @@ namespace OpenTkRenderer.Util
         /// </summary>
         public static void Update()
         {
-            deltaTimeSum += Time.deltaTime;
+            deltaTimeSum += Time.deltaRenderTime;
             frameCount++;
 
             if (deltaTimeSum > 1000)

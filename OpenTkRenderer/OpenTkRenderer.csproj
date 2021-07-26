@@ -46,7 +46,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Input\IInputObserver.cs" />
+    <Compile Include="Input\IMouseObserver.cs" />
     <Compile Include="Input\InputManager.cs" />
+    <Compile Include="Input\MouseManager.cs" />
     <Compile Include="OpenTkWindow.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Rendering\AttribInfo.cs" />

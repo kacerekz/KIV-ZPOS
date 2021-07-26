@@ -21,17 +21,17 @@ namespace OpenTkRenderer.Rendering.Meshes
         /// <summary>
         /// Normals array
         /// </summary>
-        public Vec3f[] Normals { get; internal set; }
+        public Vec3f[] Normals { get; set; }
         
         /// <summary>
         /// Color array
         /// </summary>
-        public Vec3f[] Colors { get; internal set; }
+        public Vec3f[] Colors { get; set; }
         
         /// <summary>
         /// Texture coordinate array
         /// </summary>
-        public Vec2f[] TexCoords { get; internal set; }
+        public Vec2f[] TexCoords { get; set; }
 
         /// <summary>
         /// Index array

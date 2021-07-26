@@ -11,6 +11,7 @@ using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
 
 using OpenTkRenderer.Input;
+using OpenTkRenderer.Rendering.Cameras;
 using OpenTkRenderer.Rendering.Scenes;
 using OpenTkRenderer.Util;
 
@@ -102,13 +103,16 @@ namespace OpenTkRenderer
         {
             Context.SwapInterval = 0;
 
-            GL.ClearColor(0.05f, 0.05f, 0.05f, 1.0f);
+            float gray = 0f;
+            GL.ClearColor(gray, gray, gray, 1.0f);
             GL.Enable(EnableCap.DepthTest);
             GL.Enable(EnableCap.CullFace);
             GL.CullFace(CullFaceMode.Back);
             GL.DrawBuffer(DrawBufferMode.Back);
 
             InputManager.Attach(this);
+            MouseManager.Window = this;
+            MouseManager.Update();
         }
 
         /// <summary>
@@ -142,8 +146,10 @@ namespace OpenTkRenderer
         {
             if (!Focused) return;
 
-            InputManager.UpdateState();
-            
+            Time.Update();
+            MouseManager.Update();
+            InputManager.Update();
+
             //Scene s = SceneManager.ActiveScene();
             //var mouse = Mouse.GetCursorState();
             //s.camera.Yaw((float)((mouse.X - mouseLastX) * e.Time));
@@ -159,15 +165,48 @@ namespace OpenTkRenderer
         /// <param name="e">Event data</param>
         protected override void OnRenderFrame(FrameEventArgs e)
         {
-            Time.Update();
+            Time.UpdateRenderTime();
             FPSCounter.Update();
             FPSCounter.PrintFPS();
 
             var renderPass = SceneManager.RenderPass;
             var scene = SceneManager.ActiveScene;
-            
+
+            // Render light POV
+            var shadowBuffer = scene.shadowBuffer;
+            var sceneCamera = scene.camera;
+
+            for (int i = 0; i < Scene.MAX_LIGHTS; i++)
+            {
+                GL.BindFramebuffer(FramebufferTarget.Framebuffer, shadowBuffer.ID);
+                GL.FramebufferTextureLayer(FramebufferTarget.Framebuffer, FramebufferAttachment.DepthAttachment,
+                    shadowBuffer.depthBuffer, 0, i);
+
+                GL.ClearStencil(0);
+                GL.DrawBuffer(DrawBufferMode.None);
+                GL.Viewport(0, 0, shadowBuffer.width, shadowBuffer.height);
+                GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
+
+                var lightCamera = new Camera();
+                var light = scene.activeLights[i];
+
+                lightCamera.view = light.BuildViewMatrix();
+                lightCamera.projection = light.BuildProjectionMatrix();
+                scene.camera = lightCamera;
+
+                renderPass.Render(scene);
+                GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
+            }
+
+            scene.camera = sceneCamera;
+
+
+            // Render scene with shadows
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
+            GL.DrawBuffer(DrawBufferMode.Back);
+            GL.Viewport(0, 0, Width, Height);
             renderPass.Render(scene);
+
 
             Context.SwapBuffers();
             base.OnRenderFrame(e);

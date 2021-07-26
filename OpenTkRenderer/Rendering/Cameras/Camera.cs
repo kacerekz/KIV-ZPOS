@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace OpenTkRenderer.Rendering.Cameras
 {
-    public class Camera : IInputObserver
+    public class Camera : IInputObserver, IMouseObserver
     {
         /// <summary>
         /// Camera settings
@@ -31,6 +31,12 @@ namespace OpenTkRenderer.Rendering.Cameras
         /// <param name="state">Keyboard state</param>
         public virtual void Update(IDictionary<string, bool> state) { }
 
-        // Add a MouseObserver
+        /// <summary>
+        /// Update based on mouse movement
+        /// </summary>
+        /// <param name="deltaX">Mouse delta on X axis</param>
+        /// <param name="deltaY">Mouse delta on Y axis</param>
+        public virtual void Update(float deltaX, float deltaY) { }
+
     }
 }

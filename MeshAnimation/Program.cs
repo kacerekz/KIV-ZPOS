@@ -1,4 +1,6 @@
-﻿using MeshAnimation.Util;
+﻿using MeshAnimation.MathUtil;
+using MeshAnimation.Util;
+using OpenTK;
 using OpenTkRenderer;
 using OpenTkRenderer.Rendering;
 using OpenTkRenderer.Rendering.Materials;
@@ -48,9 +50,48 @@ namespace MeshAnimation
         private static void Render(Config config)
         {
             var window = new OpenTkWindow(config.windowWidth, config.windowHeight, "MeshAnimation");
+            GameObject teapot = LoadObject("Data/teapot.obj");
+            GameObject plane = LoadObject("Data/plane.obj");
+            plane.transform *= Matrix4.CreateScale(10.0f);
+            plane.transform *= Matrix4.CreateTranslation(0.0f, -1.5f, -5.0f);
+            teapot.transform *= Matrix4.CreateTranslation(0.0f, -1.5f, -5.0f);
 
+            var light = new Light(
+                // position
+                new Vector3(0.0f, 1.0f, -5.0f),
+                // direction
+                new Vector3(0.0f, -1.0f, 0.0f));
+
+            light.SetParameters(
+                // ambient
+                new Vector3(0.0f, 0.1f, 0.1f),
+                // diffuse
+                new Vector3(1.0f, 1.0f, 1.0f),
+                // specular
+                new Vector3(0.2f, 0.2f, 0.2f));
+
+            light.SetAttenuation(0.09f, 0.032f);
+            light.SetCutoff(20f, 30f);
+
+            SceneManager.ActiveScene.activeLights.Add(light);
+            SceneManager.ActiveScene.gameObjects.Add("teapot", teapot);
+            SceneManager.ActiveScene.gameObjects.Add("plane", plane);
+
+            window.Run(config.updatesPerSecond, config.framesPerSecond);
+        }
+
+        /// <summary>
+        /// Temporary test method for loading objects
+        /// </summary>
+        /// <param name="filename">Path from which to load a mesh</param>
+        /// <returns>GameObject represented by mesh at the given path</returns>
+        private static GameObject LoadObject(string filename)
+        {
             var loader = new ObjLoader();
-            loader.Load("Data/teapot.obj");
+            loader.Load(filename);
+            if (loader.Normals == null || loader.Normals.Length == 0)
+                BasicProcessing.CalculateNormals(loader);
+
             var testMesh = new BasicMesh(loader);
 
             var vertexShader = new VertexShader(File.ReadAllText("Shaders/basic.vert"));
@@ -63,13 +104,8 @@ namespace MeshAnimation
             var testObject = new GameObject();
             testObject.mesh = testMesh;
             testObject.material = testMaterial;
-            testObject.transform = OpenTK.Matrix4.Identity;
-            testObject.transform *= OpenTK.Matrix4.CreateTranslation(0, 0, -10f);
-
-            SceneManager.ActiveScene.gameObjects.Add("testMesh", testObject);
-
-            window.Run(config.updatesPerSecond, config.framesPerSecond);
-
+            testObject.transform = Matrix4.Identity;
+            return testObject;
         }
 
         /// <summary>

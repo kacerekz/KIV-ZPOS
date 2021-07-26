@@ -45,10 +45,10 @@ namespace OpenTkRenderer.Rendering.Meshes
             indexCount = indices.Length;
 
             int bpv = 0;
-            if (vertices != null) bpv += 3 * sizeof(float);
-            if (normals != null) bpv += 3 * sizeof(float);
-            if (colors != null) bpv += 3 * sizeof(float);
-            if (texCoords != null) bpv += 2 * sizeof(float);
+            if (vertices != null && vertices.Length != 0) bpv += 3 * sizeof(float);
+            if (normals != null && normals.Length != 0) bpv += 3 * sizeof(float);
+            if (colors != null && colors.Length != 0) bpv += 3 * sizeof(float);
+            if (texCoords != null && texCoords.Length != 0) bpv += 2 * sizeof(float);
 
             // Generating vertex array object
             vao = GL.GenVertexArray();
@@ -80,7 +80,7 @@ namespace OpenTkRenderer.Rendering.Meshes
             offset += vertices.Length * 3 * sizeof(float);
 
             // Normals
-            if (normals != null)
+            if (normals != null && normals.Length != 0)
             {
                 GL.BufferSubData(BufferTarget.ArrayBuffer,
                 (IntPtr)offset,
@@ -95,7 +95,7 @@ namespace OpenTkRenderer.Rendering.Meshes
             }
 
             // Colors
-            if (colors != null)
+            if (colors != null && colors.Length != 0)
             {
                 GL.BufferSubData(BufferTarget.ArrayBuffer,
                 (IntPtr)offset,
@@ -110,7 +110,7 @@ namespace OpenTkRenderer.Rendering.Meshes
             }
 
             // Texture coordinates
-            if (texCoords != null)
+            if (texCoords != null && texCoords.Length != 0)
             {
                 GL.BufferSubData(BufferTarget.ArrayBuffer,
                 (IntPtr)offset,

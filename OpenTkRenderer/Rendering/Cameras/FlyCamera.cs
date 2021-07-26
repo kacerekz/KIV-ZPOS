@@ -56,7 +56,7 @@ namespace OpenTkRenderer.Rendering.Cameras
             this.yaw = (float)Math.Atan2(forward.Z, forward.X);
             this.pitch = 0;
 
-            this.baseSpeed = 0.005f;
+            this.baseSpeed = 0.1f;
 
             UpdateView();
         }
@@ -109,5 +109,39 @@ namespace OpenTkRenderer.Rendering.Cameras
             UpdateView();
         }
 
+        /// <summary>
+        /// Update camera tilt based on mouse delta
+        /// </summary>
+        /// <param name="deltaX">Mouse delta on X axis</param>
+        /// <param name="deltaY">Mouse delta on Y axis</param>
+        public override void Update(float deltaX, float deltaY)
+        {
+            Yaw(deltaX * Time.deltaTime * 0.001f);
+            Pitch(-deltaY * Time.deltaTime * 0.001f);
+        }
+
+        /// <summary>
+        /// Changes the yaw based on delta since last frame
+        /// </summary>
+        /// <param name="delta">Yaw difference since last frame</param>
+        public void Yaw(float delta)
+        {
+            yaw += delta;
+            UpdateView();
+        }
+
+        /// <summary>
+        /// Changes the pitch based on delta since last frame
+        /// </summary>
+        /// <param name="delta">Pitch difference since last frame</param>
+        public void Pitch(float delta)
+        {
+            pitch += delta;
+
+            if (pitch < MathHelper.DegreesToRadians(-89)) pitch = MathHelper.DegreesToRadians(-89);
+            if (pitch > MathHelper.DegreesToRadians(89)) pitch = MathHelper.DegreesToRadians(89);
+
+            UpdateView();
+        }
     }
 }

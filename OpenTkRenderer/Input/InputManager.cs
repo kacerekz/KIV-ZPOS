@@ -44,12 +44,18 @@ namespace OpenTkRenderer.Input
         public static void CreateKeyMapping()
         {
             mapping["Exit"] = Key.Escape;
+            mapping["MoveForward"] = Key.W;
+            mapping["MoveBackwards"] = Key.S;
+            mapping["MoveUp"] = Key.Q;
+            mapping["MoveDown"] = Key.E;
+            mapping["MoveLeft"] = Key.A;
+            mapping["MoveRight"] = Key.D;
         }
 
         /// <summary>
         /// Updates keyboard state
         /// </summary>
-        public static void UpdateState()
+        public static void Update()
         {
             var inputs = mapping.Keys;
             var keyboardState = Keyboard.GetState();

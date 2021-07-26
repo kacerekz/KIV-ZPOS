@@ -1,4 +1,5 @@
 ﻿using OpenTK;
+using OpenTkRenderer.Input;
 using OpenTkRenderer.Rendering.Cameras;
 using OpenTkRenderer.Rendering.Materials;
 using OpenTkRenderer.Rendering.Meshes;
@@ -46,11 +47,14 @@ namespace OpenTkRenderer.Rendering.Scenes
         public Scene()
         {
             camera = new FlyCamera(new Vector3(0, 0, 0), new Vector3(0, 0, -1));
+            InputManager.Attach(camera);
+            MouseManager.Attach(camera);
 
             shadowBuffer = new Framebuffer(1024, 1024);
             shadowBuffer.GenerateLightAttachment(MAX_LIGHTS);
             shadowBuffer.CommitAttachments();
 
+            activeLights = new List<Light>();
             meshes = new Dictionary<string, Mesh>();
             materials = new Dictionary<string, Material>();
             shaders = new Dictionary<string, ShaderProgram>();
