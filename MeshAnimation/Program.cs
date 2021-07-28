@@ -14,6 +14,8 @@ using System.Text;
 using System.Threading.Tasks;
 
 
+// testing push :)
+
 /*
  * Something is weird with the ligting and shadows, either the shadow buffer is just not working or i am forgetting something
  * It might also be unstable - after editing a shader I lost all image & "fixed it" by redoing some edits so no idea what happened there
