@@ -12,6 +12,6 @@ namespace MeshAnimation.Clustering
         List<int[]> BoneClusters { get; }
         MeshLoader[] Animation { get; set; }
 
-        bool Cluster(MeshLoader restPose);
+        bool Cluster(ObjLoader restPose);
     }
 }

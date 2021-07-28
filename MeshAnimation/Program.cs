@@ -1,4 +1,6 @@
-﻿using MeshAnimation.MathUtil;
+﻿using MeshAnimation.Animation;
+using MeshAnimation.Clustering;
+using MeshAnimation.MathUtil;
 using MeshAnimation.Util;
 using OpenTK;
 using OpenTkRenderer;
@@ -29,6 +31,9 @@ namespace MeshAnimation
     /// </summary>
     class Program
     {
+        // TODO path to animation - debug ONLY! CHANGE IN YOUR APP!!
+        static string animPath = @"D:\moje\school\04\zpos\ZPOS data\constant connectivity\jump";
+
         /// <summary>
         /// Depending on the mode, the program processes or renders mesh animations
         /// </summary>
@@ -61,6 +66,9 @@ namespace MeshAnimation
         private static void Render(Config config)
         {
             var window = new OpenTkWindow(config.windowWidth, config.windowHeight, "MeshAnimation");
+
+            IAnimation anim = LoadAnimation(animPath);
+
             GameObject teapot = LoadObject("Data/teapot.obj");
             GameObject plane = LoadObject("Data/plane.obj");
             plane.transform *= Matrix4.CreateScale(10.0f);
@@ -89,6 +97,23 @@ namespace MeshAnimation
             SceneManager.ActiveScene.gameObjects.Add("plane", plane);
 
             window.Run(config.updatesPerSecond, config.framesPerSecond);
+        }
+
+        /// <summary>
+        /// Temporary test method for loading animations
+        /// </summary>
+        /// <param name="foldername">Path from which to load animation</param>
+        /// <returns>Animation</returns>
+        private static IAnimation LoadAnimation(string foldername)
+        {
+            IAnimation anim = new DMAnimation();
+            anim.LoadAnimation(foldername);
+
+            KMeans km = new KMeans();
+            km.BoneCount = 10;
+            km.Cluster((ObjLoader)anim.RestPose);
+
+            return anim;
         }
 
         /// <summary>
