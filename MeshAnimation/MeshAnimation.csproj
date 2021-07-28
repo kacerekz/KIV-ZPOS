@@ -46,6 +46,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Clustering\IClustering.cs" />
+    <Compile Include="Clustering\KMeans.cs" />
     <Compile Include="Config.cs" />
     <Compile Include="MathUtil\BasicProcessing.cs" />
     <Compile Include="Mode.cs" />
