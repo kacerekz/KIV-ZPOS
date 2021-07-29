@@ -68,9 +68,10 @@ namespace MeshAnimation
         {
             var window = new OpenTkWindow(config.windowWidth, config.windowHeight, "MeshAnimation");
 
+            // loading animation
             IAnimation anim = LoadAnimation(animPath);
             GameObject restPose = LoadRestPose(anim);
-            restPose.transform *= Matrix4.CreateScale(0.03f);
+            restPose.transform *= Matrix4.CreateScale(0.03f); // jump 0.03 scale, samba 1 scale
             // TODO load rest pose -> display w/ colours
 
             GameObject teapot = LoadObject("Data/teapot.obj");
@@ -104,6 +105,11 @@ namespace MeshAnimation
             window.Run(config.updatesPerSecond, config.framesPerSecond);
         }
 
+        /// <summary>
+        /// Temporary test method - load rest pose of animation into a game object
+        /// </summary>
+        /// <param name="anim"> Input animation </param>
+        /// <returns> Rest pose game object </returns>
         private static GameObject LoadRestPose(IAnimation anim)
         {
             ObjLoader loader = (ObjLoader)anim.RestPose;
@@ -127,16 +133,18 @@ namespace MeshAnimation
             return testObject;
         }
 
-        /// <summary>
-        /// Temporary test method for loading animations
+        /// <summary> 
+        /// Temporary test method - load animation
         /// </summary>
         /// <param name="foldername">Path from which to load animation</param>
         /// <returns>Animation</returns>
         private static IAnimation LoadAnimation(string foldername)
         {
+            // load animation
             IAnimation anim = new DMAnimation();
             anim.LoadAnimation(foldername);
 
+            // cluster
             KMeans km = new KMeans();
             km.BoneCount = 9;
             km.Cluster((ObjLoader)anim.RestPose);
