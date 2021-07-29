@@ -1,17 +1,23 @@
 ﻿using OpenTkRenderer.Rendering.Meshes;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MeshAnimation.Clustering
 {
+    /// <summary>
+    /// Clustering interface
+    /// </summary>
     interface IClustering
     {
+        /// <summary>
+        /// Result clusters
+        /// </summary>
         List<int[]> BoneClusters { get; }
-        MeshLoader[] Animation { get; set; }
 
-        bool Cluster(ObjLoader restPose);
+        /// <summary>
+        /// Cluster call
+        /// </summary>
+        /// <param name="objFile"> Input file </param>
+        /// <returns> True if successfull, false if not </returns>
+        bool Cluster(ObjLoader objFile);
     }
 }

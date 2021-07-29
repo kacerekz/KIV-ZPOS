@@ -53,6 +53,8 @@ public static class KMeansLib {
             clusters[clustering[i]].Add(i);
         }
 
+        Console.WriteLine(clustering.Length + "vs" + data.Length);
+
         int[][] realclusters = new int[clusterCount][];
         for (int k = 0; k < clusterCount; k++)
             realclusters[k] = clusters[k].ToArray();

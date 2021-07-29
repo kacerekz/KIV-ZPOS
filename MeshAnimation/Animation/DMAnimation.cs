@@ -1,21 +1,27 @@
 ﻿using MeshAnimation.Util;
 using OpenTkRenderer.Rendering.Meshes;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MeshAnimation.Animation
 {
+    /// <summary>
+    /// Dynamic mesh animation
+    /// </summary>
     class DMAnimation : IAnimation
     {
+        /// <summary> Rest pose </summary>
         MeshLoader restPose;
         public MeshLoader RestPose { get => restPose; set => restPose = value; }
 
+        /// <summary> Animation frames </summary>
         MeshLoader[] frames;
         public MeshLoader[] Frames { get => frames; set => frames = value; }
 
+        /// <summary>
+        /// Load animation frames from folder, set up rest pose
+        /// </summary>
+        /// <param name="folder"> Path to folder </param>
+        /// <returns> True if successful, false if not </returns>
         public bool LoadAnimation(string folder)
         {
             Console.WriteLine("Loading animation " + folder);

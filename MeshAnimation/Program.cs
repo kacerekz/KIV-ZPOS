@@ -8,6 +8,7 @@ using OpenTkRenderer.Rendering;
 using OpenTkRenderer.Rendering.Materials;
 using OpenTkRenderer.Rendering.Meshes;
 using OpenTkRenderer.Rendering.Scenes;
+using OpenTkRenderer.Structs;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -68,6 +69,9 @@ namespace MeshAnimation
             var window = new OpenTkWindow(config.windowWidth, config.windowHeight, "MeshAnimation");
 
             IAnimation anim = LoadAnimation(animPath);
+            GameObject restPose = LoadRestPose(anim);
+            restPose.transform *= Matrix4.CreateScale(0.03f);
+            // TODO load rest pose -> display w/ colours
 
             GameObject teapot = LoadObject("Data/teapot.obj");
             GameObject plane = LoadObject("Data/plane.obj");
@@ -83,7 +87,7 @@ namespace MeshAnimation
 
             light.SetParameters(
                 // ambient
-                new Vector3(0.0f, 0.1f, 0.1f),
+                new Vector3(1, 1, 1),
                 // diffuse
                 new Vector3(0.8f, 0.8f, 0.8f),
                 // specular
@@ -95,8 +99,32 @@ namespace MeshAnimation
             SceneManager.ActiveScene.activeLights.Add(light);
             SceneManager.ActiveScene.gameObjects.Add("teapot", teapot);
             SceneManager.ActiveScene.gameObjects.Add("plane", plane);
+            SceneManager.ActiveScene.gameObjects.Add("restPose", restPose);
 
             window.Run(config.updatesPerSecond, config.framesPerSecond);
+        }
+
+        private static GameObject LoadRestPose(IAnimation anim)
+        {
+            ObjLoader loader = (ObjLoader)anim.RestPose;
+
+            if (loader.Normals == null || loader.Normals.Length == 0)
+                BasicProcessing.CalculateNormals(loader);
+
+            var testMesh = new BasicMesh(loader);
+
+            var vertexShader = new VertexShader(File.ReadAllText("Shaders/colours.vert"));
+            var fragmentShader = new FragmentShader(File.ReadAllText("Shaders/colours.frag"));
+            var testShader = new ShaderProgram(vertexShader, fragmentShader);
+
+            var testMaterial = new BasicMaterial();
+            testMaterial.shaderProgram = testShader;
+
+            var testObject = new GameObject();
+            testObject.mesh = testMesh;
+            testObject.material = testMaterial;
+            testObject.transform = Matrix4.Identity;
+            return testObject;
         }
 
         /// <summary>
@@ -110,8 +138,22 @@ namespace MeshAnimation
             anim.LoadAnimation(foldername);
 
             KMeans km = new KMeans();
-            km.BoneCount = 10;
+            km.BoneCount = 9;
             km.Cluster((ObjLoader)anim.RestPose);
+
+            // colours according to clusters
+            anim.RestPose.Colors = new Vec3f[anim.RestPose.Vertices.Length];
+            for (int i = 0; i < km.BoneClusters.Count; i++)
+            {
+                float step = 1.0f / (km.BoneCount + 1);
+                Vec3f color = new Vec3f();
+                color.x = step * i;
+                color.y = 0.1f;
+                color.z = step * i;
+
+                for (int j = 0; j < km.BoneClusters[i].Length; j++)
+                    anim.RestPose.Colors[km.BoneClusters[i][j]] = color;
+            }
 
             return anim;
         }
