@@ -18,6 +18,6 @@ namespace MeshAnimation.Clustering
         /// </summary>
         /// <param name="objFile"> Input file </param>
         /// <returns> True if successfull, false if not </returns>
-        bool Cluster(ObjLoader objFile);
+        bool Cluster(ObjLoader[] objFile);
     }
 }

@@ -147,7 +147,12 @@ namespace MeshAnimation
             // cluster
             KMeans km = new KMeans();
             km.BoneCount = 9;
-            km.Cluster((ObjLoader)anim.RestPose);
+
+            ObjLoader[] objs = new ObjLoader[anim.Frames.Length];
+            for (int f = 0; f < anim.Frames.Length; f++)
+                objs[f] = (ObjLoader)anim.Frames[f];
+
+            km.Cluster(objs);
 
             // colours according to clusters
             anim.RestPose.Colors = new Vec3f[anim.RestPose.Vertices.Length];

@@ -22,15 +22,19 @@ namespace MeshAnimation.Clustering
         /// </summary>
         /// <param name="objFile"> Rest pose </param>
         /// <returns> True if successfull, false if not </returns>
-        public bool Cluster(ObjLoader objFile)
+        public bool Cluster(ObjLoader[] objFiles)
         {
-            if (BoneCount <= 0 || objFile == null)
+            if (BoneCount <= 0 || objFiles == null || objFiles.Length == 0)
                 return false;
 
             // call clustering library on data
-            Vec3f[] vertices = objFile.Vertices;
-            if (vertices == null || vertices.Length == 0)
-                return false;
+            Vec3f[][] vertices = new Vec3f[objFiles.Length][];
+            for (int i = 0; i < objFiles.Length; i++)
+            {
+                vertices[i] = objFiles[i].Vertices;
+                if (vertices[i] == null)
+                    return false;
+            }
 
             KMeansCluster(vertices);
             
@@ -41,7 +45,7 @@ namespace MeshAnimation.Clustering
         /// Clustering library call and processing result
         /// </summary>
         /// <param name="vertices"> Input data </param>
-        private void KMeansCluster(Vec3f[] vertices)
+        private void KMeansCluster(Vec3f[][] vertices)
         {
             boneClusters = new List<int[]>();
 
