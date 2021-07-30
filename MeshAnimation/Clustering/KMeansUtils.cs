@@ -1,14 +1,25 @@
-﻿using OpenTkRenderer.Structs;
+﻿using MathNet.Numerics.LinearAlgebra;
+using MathNet.Numerics.LinearAlgebra.Double;
+using MeshAnimation.Clustering;
+using OpenTkRenderer.Structs;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
+// TODO předávat si průměry -> aby se počítalo dycky se stejnejma
+
+
 /// <summary>
 /// Provides a simple implementation of the k-Means algorithm. This solution is quite simple and does not support any parallel execution as of yet.
 /// </summary>
-public static class KMeansLib {
+public static class KMeansLib 
+{
+    static Kabsch kabschSolver;
+    static Matrix<double>[][] tMatrices;
 
     public static KMeansResults Cluster(Vec3f[][] items, int clusterCount, int maxIterations, int seed) {
+        kabschSolver = new Kabsch();
+
         double[][][] data = new double[items.Length][][];
         for (int f = 0; f < items.Length; f++) {
             data[f] = new double[items[f].Length][];
@@ -43,13 +54,16 @@ public static class KMeansLib {
         // Create cluster means and centroids
         double[][][] means = CreateMatrix(frameCount, clusterCount, numAttributes);
         int[,] centroidIdx = new int[frameCount,clusterCount];
+
+        tMatrices = CreateMatrices(frameCount, clusterCount);
+
         int[,] clusterItemCount = new int[frameCount, clusterCount]; // TODO OPTI - same for all frames -> store only once
 
         // Perform the clustering - need to take into account all frames
         while (hasChanges && iteration < maxIterations) {
             clusterItemCount = new int[frameCount, clusterCount];
             totalDistance = CalculateClusteringInformation(data, clustering, ref means, ref centroidIdx, clusterCount, ref clusterItemCount);
-            hasChanges = AssignClustering(data, clustering, centroidIdx, clusterCount);
+            hasChanges = AssignClustering(data, means, clustering, centroidIdx, clusterCount);
             ++iteration;
         }
 
@@ -62,7 +76,7 @@ public static class KMeansLib {
         for (int i = 0; i < clustering.Length; i++)
             clusters[clustering[i]].Add(i);
 
-        Console.WriteLine(clustering.Length + "vs" + data.Length);
+        Console.WriteLine(clustering.Length + " vs " + data[0].Length);
 
         int[][] realclusters = new int[clusterCount][];
         for (int k = 0; k < clusterCount; k++)
@@ -70,6 +84,19 @@ public static class KMeansLib {
 
         // Return the results
         return new KMeansResults(realclusters); // , means, centroidIdx, totalDistance);
+    }
+
+    private static Matrix<double>[][] CreateMatrices(int frameCount, int clusterCount)
+    {
+        Matrix<double>[][] array = new Matrix<double>[frameCount][];
+        for (int f = 0; f < frameCount; f++)
+        {
+            array[f] = new Matrix<double>[clusterCount];
+            for (int i = 0; i < clusterCount; i++)
+                array[f][i] = Matrix.Build.DenseIdentity(3);
+        }
+
+        return array;
     }
 
     private static int[] InitializeClustering(int numData, int clusterCount, int seed) {
@@ -97,7 +124,44 @@ public static class KMeansLib {
         return matrix;
     }
 
-    private static double CalculateClusteringInformation(double[][][] data, int[] clustering, ref double[][][] means, ref int[,] centroidIdx, int clusterCount, ref int[,] clusterItemCount) {
+    private static double CalculateClusteringInformation(double[][][] data, int[] clustering, ref double[][][] means, ref int[,] centroidIdx, int clusterCount, ref int[,] clusterItemCount)
+    {
+
+        // get sets of points
+        // in each frame is bones sets
+        // compute rotation matrix between them
+        // for each frame for each bone compute rotation between rest pose and frame set of points
+
+        // rest pose points
+        List<Vec3f>[] clusterDataRP = new List<Vec3f>[clusterCount];
+        for (int i = 0; i < clusterCount; i++)
+            clusterDataRP[i] = new List<Vec3f>();
+
+        for (int j = 0; j < data[0].Length; j++)
+        {
+            int index = clustering[j];
+            clusterDataRP[index].Add(new Vec3f((float)data[0][j][0], (float)data[0][j][1], (float)data[0][j][2]));
+        }
+
+        for (int f = 0; f < data.Length; f++)
+        {
+            // data in frame in cluster
+            List<Vec3f>[] clusterData = new List<Vec3f>[clusterCount];
+            for (int i = 0; i < clusterCount; i++)
+                clusterData[i] = new List<Vec3f>();
+
+            // file data into lists based on clusters
+            for (int j = 0; j < data[f].Length; j++)
+            {
+                int index = clustering[j];
+                clusterData[index].Add(new Vec3f((float)data[f][j][0], (float)data[f][j][1], (float)data[f][j][2]));
+            }
+
+            // compute optimal rotation matrix
+            for (int i = 0; i < clusterCount; i++)
+                tMatrices[f][i] = kabschSolver.SolveKabsch(clusterDataRP[i].ToArray(), clusterData[i].ToArray());
+        }
+
 
         // Reset the means to zero for all clusters in all frames
         foreach (var frame in means)
@@ -163,8 +227,14 @@ public static class KMeansLib {
     /// assigns the data item to the cluster with the minimum distance.
     /// </summary>
     /// <returns>true if any clustering arrangement has changed, false if clustering did not change.</returns>
-    private static bool AssignClustering(double[][][] data, int[] clustering, int[,] centroidIdx, int clusterCount) {
+    private static bool AssignClustering(double[][][] data, double[][][] means, int[] clustering, int[,] centroidIdx, int clusterCount)
+    {
         bool changed = false;
+
+        // compare transformation of rest pose vertices to position of vertices in frame
+        // squared distance between those
+        // add together thorough all frames
+
 
         for (int i = 0; i < data[0].Length; i++) {
             double minDistance = double.MaxValue;
@@ -174,7 +244,14 @@ public static class KMeansLib {
 
                 double distance = 0;
                 for (int f = 0; f < data.Length; f++)
-                    distance += CalculateDistance(data[f][i], data[f][centroidIdx[f,k]]);
+                {
+                    Vector<double> resPos = tMatrices[f][k] * Vector<double>.Build.Dense(new double[] { data[0][i][0] - means[0][k][0], data[0][i][1] - means[0][k][1], data[0][i][2] - means[0][k][2] });
+                    double[] arrayRes = new double[] { resPos[0] + means[f][k][0], resPos[1] + means[f][k][1], resPos[2] + means[f][k][2] };
+
+                    distance += CalculateDistance(data[f][i], arrayRes);
+
+                    // distance += CalculateDistance(data[f][i], data[f][centroidIdx[f, k]]);
+                }
 
                 if (distance < minDistance) {
                     minDistance = distance;

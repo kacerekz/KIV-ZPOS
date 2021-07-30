@@ -154,6 +154,7 @@ namespace MeshAnimation
 
             km.Cluster(objs);
 
+            Random r = new Random();
             // colours according to clusters
             anim.RestPose.Colors = new Vec3f[anim.RestPose.Vertices.Length];
             for (int i = 0; i < km.BoneClusters.Count; i++)
@@ -161,8 +162,8 @@ namespace MeshAnimation
                 float step = 1.0f / (km.BoneCount + 1);
                 Vec3f color = new Vec3f();
                 color.x = step * i;
-                color.y = 0.1f;
-                color.z = step * i;
+                color.y = (float)r.NextDouble();
+                color.z = (float)r.NextDouble();
 
                 for (int j = 0; j < km.BoneClusters[i].Length; j++)
                     anim.RestPose.Colors[km.BoneClusters[i][j]] = color;

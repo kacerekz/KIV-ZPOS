@@ -50,7 +50,7 @@ namespace MeshAnimation.Clustering
             boneClusters = new List<int[]>();
 
             // cluster
-            KMeansResults res = KMeansLib.Cluster(vertices, BoneCount, 2, 0);
+            KMeansResults res = KMeansLib.Cluster(vertices, BoneCount, 5, 0);
             
             // clusters into BoneClusters
             for (int i = 0; i < res.clusters.Length; i++)

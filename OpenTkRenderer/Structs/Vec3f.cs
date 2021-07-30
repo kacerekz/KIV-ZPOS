@@ -15,6 +15,13 @@ namespace OpenTkRenderer.Structs
         public float y;
         public float z;
 
+        public Vec3f(float x = 0, float y = 0, float z = 0)
+        {
+            this.x = x;
+            this.y = y;
+            this.z = z;
+        }
+
         /// <summary>
         /// Clones this vector
         /// </summary>
