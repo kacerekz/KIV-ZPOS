@@ -36,15 +36,11 @@ namespace MeshAnimation.Animation
             VertexBoneWeights = new Dictionary<int, double>[restPose.Vertices.Length];
             for (int i = 0; i < restPose.Vertices.Length; i++)
                 VertexBoneWeights[i] = new Dictionary<int, double>();
+            for (int i = 0; i < frameCount; i++)
+                Frames[i] = new Frame(boneCount);
         }
 
 
-        /// <summary>
-        /// Add frame to animation
-        /// </summary>
-        private void AddFrame()
-        {
-            throw new NotImplementedException();
-        }
+
     }
 }
