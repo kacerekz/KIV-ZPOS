@@ -77,9 +77,11 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Animation\DMAnimation.cs" />
-    <Compile Include="Animation\IAnimation.cs" />
-    <Compile Include="Animation\TVMAnimation.cs" />
+    <Compile Include="Animation\Input\DMAnimation.cs" />
+    <Compile Include="Animation\Output\Frame.cs" />
+    <Compile Include="Animation\Input\IAnimation.cs" />
+    <Compile Include="Animation\Output\SkinningAnimation.cs" />
+    <Compile Include="Animation\Input\TVMAnimation.cs" />
     <Compile Include="Clustering\IClustering.cs" />
     <Compile Include="Clustering\Kabsch.cs" />
     <Compile Include="Clustering\KMeans.cs" />
@@ -87,6 +89,8 @@
     <Compile Include="Config.cs" />
     <Compile Include="MathUtil\BasicProcessing.cs" />
     <Compile Include="Mode.cs" />
+    <Compile Include="Optimization\IOptimizer.cs" />
+    <Compile Include="Optimization\SSDROptimizer.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Util\FileProcessing.cs" />

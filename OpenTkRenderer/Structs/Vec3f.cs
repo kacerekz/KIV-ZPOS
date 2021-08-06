@@ -81,5 +81,34 @@ namespace OpenTkRenderer.Structs
             cross.z = x * other.y - y * other.x;
             return cross;
         }
+
+        public Vec3f Multiplied(float v)
+        {
+            Vec3f res = new Vec3f();
+
+            res.x = x * v;
+            res.y = y * v;
+            res.z = z * v;
+
+            return res;
+        }
+
+        public void Divide(float v)
+        {
+            x /= v;
+            y /= v;
+            z /= v;
+        }
+
+        public Vec3f Subtracted(Vec3f v)
+        {
+            Vec3f res = new Vec3f();
+
+            res.x = x - v.x;
+            res.y = y - v.y;
+            res.z = z - v.z;
+
+            return res;
+        }
     }
 }
