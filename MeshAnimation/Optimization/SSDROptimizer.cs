@@ -6,9 +6,6 @@ using OpenTkRenderer.Rendering.Meshes;
 using OpenTkRenderer.Structs;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MeshAnimation.Optimization
 {
@@ -16,11 +13,14 @@ namespace MeshAnimation.Optimization
     {
         public int boneCount = 9;
         public int maxIterations = 1000;
+        int maxInits = 10;
 
         SkinningAnimation outAnim;
         IAnimation inAnim;
 
         public float sigEpsilon;
+        int initCount = 0;
+
 
         /// <summary>
         /// Optimize animation
@@ -30,6 +30,7 @@ namespace MeshAnimation.Optimization
         {
             // TODO two different paths for TVM and DMA
 
+            initCount = 0;
             outAnim = new SkinningAnimation((ObjLoader)inAnim.RestPose, boneCount, inAnim.Frames.Length);
             this.inAnim = inAnim;
 
@@ -122,8 +123,9 @@ namespace MeshAnimation.Optimization
                     if (boneWeightSum < sigEpsilon)
                     {
                         // re-initialize bone
-                        ReInitializeBone(b);
-                        continue;
+                        bool res = ReInitializeBone(b);
+                        if (res)
+                            continue;
                     }
 
                     // CoR coordinates
@@ -235,18 +237,116 @@ namespace MeshAnimation.Optimization
             return res;
         }
 
-        private void ReInitializeBone(int b)
+        /// <summary>
+        /// Re-initialization of insignificant bone
+        /// </summary>
+        /// <param name="b"> Bone to re-initialize </param>
+        /// <returns> Returns false if unsuccessfull (aka a bone has been re-initialized too many times), true if successfull  </returns>
+        private bool ReInitializeBone(int b)
         {
+            if (initCount > maxInits)
+                return false;
 
             // find vertex with largest reconstruction error
+            double max = double.MinValue;
+            int maxIndex = -1;
+            for (int i = 0; i < inAnim.RestPose.Vertices.Length; i++)
+            {
+                double recError = GetVertexReconstructionError(i);
+                
+                if (max < recError)
+                {
+                    max = recError;
+                    maxIndex = i;
+                }
+            }
 
             // find 20 nearest vertices to that vertex
+            List<int> neighboursIndices = inAnim.RestPose.GetNearestNeighbours(maxIndex, 20);
 
-            // re-initialize bone transformation and rotation using Kabsch algorithm
+            // assign bone to that vertex
+            for (int i = 0; i < outAnim.VertexBoneWeights.Length; i++)
+            {
+                for (int j = 0; j < neighboursIndices.Count; j++)
+                {
+                    if (outAnim.VertexBoneWeights[i].ContainsKey(neighboursIndices[j]))
+                        outAnim.VertexBoneWeights[i].Remove(neighboursIndices[j]);
+                    outAnim.VertexBoneWeights[b].Add(neighboursIndices[j], 1);
+                }
+            }
+
+            List<Vec3f> neighbours = new List<Vec3f>();
+            for (int i = 0; i < inAnim.RestPose.Vertices.Length; i++)
+            {
+                Vec3f v = inAnim.RestPose.Vertices[i];
+                if (neighboursIndices.Contains(i))
+                    neighbours.Add(v);
+            }
+
+            Kabsch k = new Kabsch();
+            for (int f = 0; f < inAnim.Frames.Length; f++)
+            {
+                List<Vec3f> neighboursInPose = new List<Vec3f>();
+
+                for (int i = 0; i < inAnim.RestPose.Vertices.Length; i++)
+                {
+                    Vec3f v = inAnim.Frames[f].Vertices[i];
+                    if (neighboursIndices.Contains(i))
+                        neighboursInPose.Add(v);
+                }
+
+                // re-initialize bone transformation and rotation using Kabsch algorithm
+                Matrix<double> rot = k.SolveKabsch(neighbours.ToArray(), neighboursInPose.ToArray());
+                outAnim.Frames[f].BoneRotation[b] = rot;
+                outAnim.Frames[f].BoneTranslation[b] = Vector.Build.Dense(3, 0);
+            }
 
             // increase re-init counter
+            initCount++;
 
-            throw new NotImplementedException();
+            return true;
+        }
+
+        /// <summary>
+        /// Get reconstruction error of vertex i in animation
+        /// </summary>
+        /// <param name="i"> Vertex index </param>
+        /// <returns> Reconstruction error </returns>
+        private double GetVertexReconstructionError(int i)
+        {
+            double sum = 0;
+            Vec3f vRest = inAnim.RestPose.Vertices[i];
+            Vector<double> vRestV = Vector.Build.Dense(new double[] { vRest.x, vRest.y, vRest.z });
+
+            // go through all frames
+            for (int f = 0; f < inAnim.Frames.Length; f++)
+            {
+                // get position in frame inAnim
+                Vec3f v = inAnim.Frames[f].Vertices[i];
+
+                // reconstruct position in frame outAnim
+                Vector<double> posV = Vector.Build.Dense(3);
+                for (int b = 0; b < boneCount; b++)
+                {
+                    double weight = 0;
+                    if (outAnim.VertexBoneWeights[b].ContainsKey(i))
+                        weight = outAnim.VertexBoneWeights[b][i];
+
+                    Vector<double> translation = outAnim.Frames[f].BoneTranslation[b];
+                    Matrix<double> rotation = outAnim.Frames[f].BoneRotation[b];
+
+                    posV += weight * (rotation * vRestV + translation);
+                }
+
+                // resulting error in frame
+                Vec3f pos = new Vec3f((float)posV[0], (float)posV[1], (float)posV[2]);
+                Vec3f resFrame = v.Subtracted(pos);
+
+                // add error to sum
+                sum += resFrame.x * resFrame.x + resFrame.y * resFrame.y + resFrame.z * resFrame.z;
+            }
+         
+            return sum;
         }
 
         private void WeightUpdateStep()

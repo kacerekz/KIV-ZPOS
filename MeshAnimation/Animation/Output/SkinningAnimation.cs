@@ -16,7 +16,7 @@ namespace MeshAnimation.Animation
         ObjLoader restPose;
         public ObjLoader RestPose { get => restPose; set => restPose = value; }
         
-        /// <summary> Bone-vertex weights </summary>
+        /// <summary> Bone-vertex weights - array of dictionaries for bones, key is vertex index, value is weight </summary>
         Dictionary<int, double>[] vertexBoneWeights;
         public Dictionary<int, double>[] VertexBoneWeights { get => vertexBoneWeights; set => vertexBoneWeights = value; }
 
