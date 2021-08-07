@@ -45,10 +45,6 @@ namespace OpenTkRenderer.Rendering.Meshes
         /// <param name="filename">Path to mesh file</param>
         public abstract void Load(string filename);
 
-        public List<int> GetNearestNeighbours(int i, int num)
-        {
-            // TODO get num nearest neighbours of vertex i (their indices in vertices) including i
-            throw new NotImplementedException();
-        }
+   
     }
 }

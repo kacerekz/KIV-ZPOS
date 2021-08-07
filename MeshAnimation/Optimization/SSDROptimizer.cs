@@ -6,6 +6,8 @@ using OpenTkRenderer.Rendering.Meshes;
 using OpenTkRenderer.Structs;
 using System;
 using System.Collections.Generic;
+using Supercluster.KDTree;
+using MeshAnimation.DataStructures;
 
 namespace MeshAnimation.Optimization
 {
@@ -21,6 +23,7 @@ namespace MeshAnimation.Optimization
         public float sigEpsilon;
         int initCount = 0;
 
+        KDTree<double, int> tree;
 
         /// <summary>
         /// Optimize animation
@@ -265,7 +268,9 @@ namespace MeshAnimation.Optimization
             centroid.Divide(inAnim.RestPose.Vertices.Length);
 
             // find 20 nearest vertices to that vertex
-            List<int> neighboursIndices = inAnim.RestPose.GetNearestNeighbours(maxIndex, 20);
+            if (tree == null)
+                tree = KDTree.BuildTree(inAnim.RestPose.Vertices);
+            List<int> neighboursIndices = KDTree.GetNearest(maxIndex, 21, inAnim.RestPose.Vertices, tree);
 
             // assign bone to that vertex
             for (int i = 0; i < outAnim.VertexBoneWeights.Length; i++)
