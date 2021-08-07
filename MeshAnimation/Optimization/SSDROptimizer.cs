@@ -107,6 +107,17 @@ namespace MeshAnimation.Optimization
             for (int i = 0; i < km.BoneClusters.Count; i++)
                 for (int j = 0; j < km.BoneClusters[i].Length; j++)
                     outAnim.VertexBoneWeights[km.BoneClusters[i][j]].Add(i, 1);
+
+            // set transformations
+            for (int f = 0; f < inAnim.Frames.Length; f++)
+            {
+                for (int i = 0; i < inAnim.RestPose.Vertices.Length; i++)
+                {
+                    outAnim.Frames[f].BoneRotation[i] = km.tMatrices[f][i];
+                    outAnim.Frames[f].BoneTranslation[i] = km.tVectors[f][i];
+                }
+            }
+
         }
 
         /// <summary>
@@ -306,7 +317,7 @@ namespace MeshAnimation.Optimization
                 // re-initialize bone transformation and rotation using Kabsch algorithm
                 Matrix<double> rot = k.SolveKabsch(neighbours.ToArray(), neighboursInPose.ToArray());
                 outAnim.Frames[f].BoneRotation[b] = rot;
-                outAnim.Frames[f].BoneTranslation[b] = Vector.Build.Dense(new double[] { centroid.x, centroid.y, centroid.z });
+                outAnim.Frames[f].BoneTranslation[b] = k.Translation;
             }
 
             // increase re-init counter

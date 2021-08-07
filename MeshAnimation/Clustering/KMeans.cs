@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using MathNet.Numerics.LinearAlgebra;
 using OpenTkRenderer.Rendering.Meshes;
 using OpenTkRenderer.Structs;
 
@@ -16,6 +17,9 @@ namespace MeshAnimation.Clustering
         /// <summary> Created clusters </summary>
         List<int[]> boneClusters;
         public List<int[]> BoneClusters { get => boneClusters; }
+
+        public Matrix<double>[][] tMatrices;
+        public Vector<double>[][] tVectors;
 
         /// <summary>
         /// Cluster objFile into BoneCount clusters
@@ -58,6 +62,9 @@ namespace MeshAnimation.Clustering
                 boneClusters.Add(res.clusters[i]);
                 Console.WriteLine(res.clusters[i].Length);
             }
+
+            tVectors = KMeansLib.tVectors;
+            tMatrices = KMeansLib.tMatrices;
         }
     }
 }

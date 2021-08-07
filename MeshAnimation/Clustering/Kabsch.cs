@@ -7,6 +7,9 @@ namespace MeshAnimation.Clustering
     class Kabsch
     {
 
+        public Matrix<double> Rotation;
+        public Vector<double> Translation;
+
         public Matrix<double> SolveKabsch(Vec3f[] pointSet1, Vec3f[] pointSet2, bool solveRotation = true, bool solveScale = false)
         {
             if (pointSet1.Length != pointSet2.Length)
@@ -15,6 +18,8 @@ namespace MeshAnimation.Clustering
             // calculate centroids
             Vec3f centroid1 = new Vec3f();
             Vec3f centroid2 = new Vec3f();
+
+           
             for (int i = 0; i < pointSet1.Length; i++)
             {
                 centroid1 = new Vec3f(centroid1.x + pointSet1[i].x, centroid1.y + pointSet1[i].y, centroid1.z + pointSet1[i].z);
@@ -22,6 +27,9 @@ namespace MeshAnimation.Clustering
             }
             centroid1 = new Vec3f(centroid1.x / pointSet1.Length, centroid1.y / pointSet1.Length, centroid1.z / pointSet1.Length);
             centroid2 = new Vec3f(centroid2.x / pointSet1.Length, centroid2.y / pointSet1.Length, centroid2.z / pointSet1.Length);
+
+            Vector<double> centroid1V = Vector<double>.Build.Dense(new double[] { centroid1.x, centroid1.y, centroid1.z });
+            Vector<double> centroid2V = Vector<double>.Build.Dense(new double[] { centroid2.x, centroid2.y, centroid2.z });
 
             // transform centroids to origin
             for (int i = 0; i < pointSet1.Length; i++)
@@ -54,8 +62,14 @@ namespace MeshAnimation.Clustering
             diag.SetRow(2, new double[] { 0, 0, d });
 
             // rotation matrix
-            Matrix<double> roataion = V * diag * UT;
-            return roataion;
+            Matrix<double> rotation = V * diag * UT;
+
+            Vector<double> translation = centroid2V - rotation * centroid1V;
+
+            Rotation = rotation;
+            Translation = translation;
+
+            return rotation;
         }
 
     }

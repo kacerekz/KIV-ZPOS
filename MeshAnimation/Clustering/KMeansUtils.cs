@@ -15,7 +15,8 @@ using System.Linq;
 public static class KMeansLib 
 {
     static Kabsch kabschSolver;
-    static Matrix<double>[][] tMatrices;
+    public static Matrix<double>[][] tMatrices;
+    public static Vector<double>[][] tVectors;
 
     public static KMeansResults Cluster(Vec3f[][] items, int clusterCount, int maxIterations, int seed) {
         kabschSolver = new Kabsch();
@@ -56,6 +57,7 @@ public static class KMeansLib
         int[,] centroidIdx = new int[frameCount,clusterCount];
 
         tMatrices = CreateMatrices(frameCount, clusterCount);
+        tVectors = CreateVectors(frameCount, clusterCount);
 
         int[,] clusterItemCount = new int[frameCount, clusterCount]; // TODO OPTI - same for all frames -> store only once
 
@@ -94,6 +96,19 @@ public static class KMeansLib
             array[f] = new Matrix<double>[clusterCount];
             for (int i = 0; i < clusterCount; i++)
                 array[f][i] = Matrix.Build.DenseIdentity(3);
+        }
+
+        return array;
+    }
+
+    private static Vector<double>[][] CreateVectors(int frameCount, int clusterCount)
+    {
+        Vector<double>[][] array = new Vector<double>[frameCount][];
+        for (int f = 0; f < frameCount; f++)
+        {
+            array[f] = new Vector<double>[clusterCount];
+            for (int i = 0; i < clusterCount; i++)
+                array[f][i] = Vector<double>.Build.Dense(3);
         }
 
         return array;
@@ -159,7 +174,10 @@ public static class KMeansLib
 
             // compute optimal rotation matrix
             for (int i = 0; i < clusterCount; i++)
+            {
                 tMatrices[f][i] = kabschSolver.SolveKabsch(clusterDataRP[i].ToArray(), clusterData[i].ToArray());
+                tVectors[f][i] = kabschSolver.Translation;
+            }
         }
 
 
@@ -245,8 +263,11 @@ public static class KMeansLib
                 double distance = 0;
                 for (int f = 0; f < data.Length; f++)
                 {
-                    Vector<double> resPos = tMatrices[f][k] * Vector<double>.Build.Dense(new double[] { data[0][i][0] - means[0][k][0], data[0][i][1] - means[0][k][1], data[0][i][2] - means[0][k][2] });
-                    double[] arrayRes = new double[] { resPos[0] + means[f][k][0], resPos[1] + means[f][k][1], resPos[2] + means[f][k][2] };
+                    // Vector<double> resPos = tMatrices[f][k] * Vector<double>.Build.Dense(new double[] { data[0][i][0] - means[0][k][0], data[0][i][1] - means[0][k][1], data[0][i][2] - means[0][k][2] });
+                    // double[] arrayRes = new double[] { resPos[0] + means[f][k][0], resPos[1] + means[f][k][1], resPos[2] + means[f][k][2] };
+
+                    Vector<double> resPos = tMatrices[f][k] * Vector<double>.Build.Dense(new double[] { data[0][i][0], data[0][i][1], data[0][i][2]}) + tVectors[f][k];
+                    double[] arrayRes = new double[] { resPos[0], resPos[1], resPos[2] };
 
                     distance += CalculateDistance(data[f][i], arrayRes);
 
