@@ -250,16 +250,19 @@ namespace MeshAnimation.Optimization
             // find vertex with largest reconstruction error
             double max = double.MinValue;
             int maxIndex = -1;
+            Vec3f centroid = new Vec3f();
             for (int i = 0; i < inAnim.RestPose.Vertices.Length; i++)
             {
                 double recError = GetVertexReconstructionError(i);
-                
+                centroid.Add(inAnim.RestPose.Vertices[i]);
+
                 if (max < recError)
                 {
                     max = recError;
                     maxIndex = i;
                 }
             }
+            centroid.Divide(inAnim.RestPose.Vertices.Length);
 
             // find 20 nearest vertices to that vertex
             List<int> neighboursIndices = inAnim.RestPose.GetNearestNeighbours(maxIndex, 20);
@@ -298,7 +301,7 @@ namespace MeshAnimation.Optimization
                 // re-initialize bone transformation and rotation using Kabsch algorithm
                 Matrix<double> rot = k.SolveKabsch(neighbours.ToArray(), neighboursInPose.ToArray());
                 outAnim.Frames[f].BoneRotation[b] = rot;
-                outAnim.Frames[f].BoneTranslation[b] = Vector.Build.Dense(3, 0);
+                outAnim.Frames[f].BoneTranslation[b] = Vector.Build.Dense(new double[] { centroid.x, centroid.y, centroid.z });
             }
 
             // increase re-init counter
