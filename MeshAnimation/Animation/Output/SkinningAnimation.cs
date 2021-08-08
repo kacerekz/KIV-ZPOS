@@ -22,7 +22,7 @@ namespace MeshAnimation.Animation
 
         /// <summary> All frames in animation </summary>
         Frame[] frames;
-        internal Frame[] Frames { get => frames; set => frames = value; }
+        public Frame[] Frames { get => frames; set => frames = value; }
 
         /// <summary>
         /// Constructor

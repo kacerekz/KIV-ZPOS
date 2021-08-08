@@ -1,14 +1,12 @@
 ﻿using MeshAnimation.Animation;
-using MeshAnimation.Clustering;
-using MeshAnimation.MathUtil;
+using MeshAnimation.Scenes;
 using MeshAnimation.Util;
+
 using OpenTK;
 using OpenTkRenderer;
 using OpenTkRenderer.Rendering;
-using OpenTkRenderer.Rendering.Materials;
-using OpenTkRenderer.Rendering.Meshes;
 using OpenTkRenderer.Rendering.Scenes;
-using OpenTkRenderer.Structs;
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -18,12 +16,6 @@ using System.Threading.Tasks;
 
 
 // testing push :)
-
-/*
- * Something is weird with the ligting and shadows, either the shadow buffer is just not working or i am forgetting something
- * It might also be unstable - after editing a shader I lost all image & "fixed it" by redoing some edits so no idea what happened there
- */
-
 
 namespace MeshAnimation
 {
@@ -68,136 +60,10 @@ namespace MeshAnimation
         {
             var window = new OpenTkWindow(config.windowWidth, config.windowHeight, "MeshAnimation");
 
-            // loading animation
-            IAnimation anim = LoadAnimation(animPath);
-            GameObject restPose = LoadRestPose(anim);
-            restPose.transform *= Matrix4.CreateScale(0.03f); // jump 0.03 scale, samba 1 scale
-            // TODO load rest pose -> display w/ colours
-
-            GameObject teapot = LoadObject("Data/teapot.obj");
-            GameObject plane = LoadObject("Data/plane.obj");
-            plane.transform *= Matrix4.CreateScale(10.0f);
-            plane.transform *= Matrix4.CreateTranslation(0.0f, -1.5f, -5.0f);
-            teapot.transform *= Matrix4.CreateTranslation(0.0f, -1.5f, -5.0f);
-
-            var light = new Light(
-                // position
-                new Vector3(5.0f, 5.0f, -5.0f),
-                // direction
-                new Vector3(-1.0f, -1.0f, 1.0f));
-
-            light.SetParameters(
-                // ambient
-                new Vector3(1, 1, 1),
-                // diffuse
-                new Vector3(0.8f, 0.8f, 0.8f),
-                // specular
-                new Vector3(0.2f, 0.2f, 0.2f));
-
-            light.SetAttenuation(0.09f, 0.032f);
-            light.SetCutoff(20f, 30f);
-
-            SceneManager.ActiveScene.activeLights.Add(light);
-            SceneManager.ActiveScene.gameObjects.Add("teapot", teapot);
-            SceneManager.ActiveScene.gameObjects.Add("plane", plane);
-            SceneManager.ActiveScene.gameObjects.Add("restPose", restPose);
+            // This is where all the objects get added to the scene
+            DemoScene.CreateScene(animPath);
 
             window.Run(config.updatesPerSecond, config.framesPerSecond);
-        }
-
-        /// <summary>
-        /// Temporary test method - load rest pose of animation into a game object
-        /// </summary>
-        /// <param name="anim"> Input animation </param>
-        /// <returns> Rest pose game object </returns>
-        private static GameObject LoadRestPose(IAnimation anim)
-        {
-            ObjLoader loader = (ObjLoader)anim.RestPose;
-
-            if (loader.Normals == null || loader.Normals.Length == 0)
-                BasicProcessing.CalculateNormals(loader);
-
-            var testMesh = new BasicMesh(loader);
-
-            var vertexShader = new VertexShader(File.ReadAllText("Shaders/colours.vert"));
-            var fragmentShader = new FragmentShader(File.ReadAllText("Shaders/colours.frag"));
-            var testShader = new ShaderProgram(vertexShader, fragmentShader);
-
-            var testMaterial = new BasicMaterial();
-            testMaterial.shaderProgram = testShader;
-
-            var testObject = new GameObject();
-            testObject.mesh = testMesh;
-            testObject.material = testMaterial;
-            testObject.transform = Matrix4.Identity;
-            return testObject;
-        }
-
-        /// <summary> 
-        /// Temporary test method - load animation
-        /// </summary>
-        /// <param name="foldername">Path from which to load animation</param>
-        /// <returns>Animation</returns>
-        private static IAnimation LoadAnimation(string foldername)
-        {
-            // load animation
-            IAnimation anim = new DMAnimation();
-            anim.LoadAnimation(foldername);
-
-            // cluster
-            KMeans km = new KMeans();
-            km.BoneCount = 9;
-
-            ObjLoader[] objs = new ObjLoader[anim.Frames.Length];
-            for (int f = 0; f < anim.Frames.Length; f++)
-                objs[f] = (ObjLoader)anim.Frames[f];
-
-            km.Cluster(objs);
-
-            Random r = new Random();
-            // colours according to clusters
-            anim.RestPose.Colors = new Vec3f[anim.RestPose.Vertices.Length];
-            for (int i = 0; i < km.BoneClusters.Count; i++)
-            {
-                float step = 1.0f / (km.BoneCount + 1);
-                Vec3f color = new Vec3f();
-                color.x = step * i;
-                color.y = (float)r.NextDouble();
-                color.z = (float)r.NextDouble();
-
-                for (int j = 0; j < km.BoneClusters[i].Length; j++)
-                    anim.RestPose.Colors[km.BoneClusters[i][j]] = color;
-            }
-
-            return anim;
-        }
-
-        /// <summary>
-        /// Temporary test method for loading objects
-        /// </summary>
-        /// <param name="filename">Path from which to load a mesh</param>
-        /// <returns>GameObject represented by mesh at the given path</returns>
-        private static GameObject LoadObject(string filename)
-        {
-            var loader = new ObjLoader();
-            loader.Load(filename);
-            if (loader.Normals == null || loader.Normals.Length == 0)
-                BasicProcessing.CalculateNormals(loader);
-
-            var testMesh = new BasicMesh(loader);
-
-            var vertexShader = new VertexShader(File.ReadAllText("Shaders/basic.vert"));
-            var fragmentShader = new FragmentShader(File.ReadAllText("Shaders/basic.frag"));
-            var testShader = new ShaderProgram(vertexShader, fragmentShader);
-
-            var testMaterial = new BasicMaterial();
-            testMaterial.shaderProgram = testShader;
-
-            var testObject = new GameObject();
-            testObject.mesh = testMesh;
-            testObject.material = testMaterial;
-            testObject.transform = Matrix4.Identity;
-            return testObject;
         }
 
         /// <summary>
@@ -208,5 +74,6 @@ namespace MeshAnimation
         {
             Console.WriteLine("Processing mode not implemented.");
         }
+
     }
 }

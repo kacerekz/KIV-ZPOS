@@ -11,7 +11,7 @@ namespace MeshAnimation.MathUtil
     /// <summary>
     /// Basic mesh processing
     /// </summary>
-    public class BasicProcessing
+    public class MeshProcessing
     {
         /// <summary>
         /// Calculates normals

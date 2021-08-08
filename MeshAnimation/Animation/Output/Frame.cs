@@ -5,12 +5,15 @@ namespace MeshAnimation.Animation
 {
     class Frame
     {
+        private int boneCount;
+
         /// <summary> Bone rotations </summary>
         Matrix<double>[] boneRotation;
         public Matrix<double>[] BoneRotation { get => boneRotation; set => boneRotation = value; }
+
         /// <summary> Bone translation </summary>
         Vector<double>[] boneTranslation;
-        private int boneCount;
+        public Vector<double>[] BoneTranslation { get => boneTranslation; set => boneTranslation = value; }
 
         public Frame(int boneCount)
         {
@@ -18,8 +21,6 @@ namespace MeshAnimation.Animation
             BoneRotation = new Matrix<double>[boneCount];
             BoneTranslation = new Vector<double>[boneCount];
         }
-
-        public Vector<double>[] BoneTranslation { get => boneTranslation; set => boneTranslation = value; }
 
     }
 }
