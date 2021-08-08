@@ -11,12 +11,12 @@ namespace OpenTkRenderer.Rendering.Meshes
     /// <summary>
     /// Mesh loader template to be extended by implementations for specific 3D file types
     /// </summary>
-    public abstract class MeshLoader
+    public class MeshLoader
     {
         /// <summary>
         /// Vertex array
         /// </summary>
-        public Vec3f[] Vertices { get; internal set; }
+        public Vec3f[] Vertices { get; set; }
 
         /// <summary>
         /// Normals array
@@ -36,13 +36,14 @@ namespace OpenTkRenderer.Rendering.Meshes
         /// <summary>
         /// Index array
         /// </summary>
-        public Vec3i[] Indices { get; internal set; }
+        public Vec3i[] Indices { get; set; }
 
 
         /// <summary>
         /// Load the mesh
         /// </summary>
         /// <param name="filename">Path to mesh file</param>
-        public abstract void Load(string filename);
+        public virtual void Load(string filename) { }
+
     }
 }

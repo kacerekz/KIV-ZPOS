@@ -35,11 +35,17 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="MathNet.Numerics, Version=4.15.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\MathNet.Numerics.4.15.0\lib\net461\MathNet.Numerics.dll</HintPath>
+    </Reference>
     <Reference Include="OpenTK, Version=3.3.1.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4, processorArchitecture=MSIL">
       <HintPath>..\packages\OpenTK.3.3.1\lib\net20\OpenTK.dll</HintPath>
     </Reference>
     <Reference Include="OpenTK.GLControl, Version=1.1.0.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4, processorArchitecture=MSIL">
       <HintPath>..\packages\OpenTK.GLControl.1.1.2225.0\lib\net20\OpenTK.GLControl.dll</HintPath>
+    </Reference>
+    <Reference Include="Supercluster.KDTree, Version=1.0.4.0, Culture=neutral, PublicKeyToken=4423da5f8ba350cf, processorArchitecture=MSIL">
+      <HintPath>..\packages\Supercluster.KDTree.1.0.4\lib\Supercluster.KDTree.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
@@ -50,6 +56,7 @@
       <Private>True</Private>
       <Private>True</Private>
     </Reference>
+    <Reference Include="System.Numerics" />
     <Reference Include="System.Runtime, Version=4.1.1.1, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Runtime.4.3.1\lib\net462\System.Runtime.dll</HintPath>
       <Private>True</Private>
@@ -60,6 +67,7 @@
       <Private>True</Private>
       <Private>True</Private>
     </Reference>
+    <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -72,15 +80,25 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Animation\DMAnimation.cs" />
-    <Compile Include="Animation\IAnimation.cs" />
-    <Compile Include="Animation\TVMAnimation.cs" />
+    <Compile Include="Animation\Input\DMAnimation.cs" />
+    <Compile Include="Animation\Output\Frame.cs" />
+    <Compile Include="Animation\Input\IAnimation.cs" />
+    <Compile Include="Animation\Output\SkinningAnimation.cs" />
+    <Compile Include="Animation\Input\TVMAnimation.cs" />
     <Compile Include="Clustering\IClustering.cs" />
+    <Compile Include="Clustering\Kabsch.cs" />
     <Compile Include="Clustering\KMeans.cs" />
     <Compile Include="Clustering\KMeansUtils.cs" />
     <Compile Include="Config.cs" />
-    <Compile Include="MathUtil\BasicProcessing.cs" />
+    <Compile Include="DataStructures\KDTree.cs" />
+    <Compile Include="Scenes\AnimationMockScene.cs" />
+    <Compile Include="Scenes\AnimationScene.cs" />
+    <Compile Include="Scenes\DemoScene.cs" />
+    <Compile Include="Scenes\Scene.cs" />
+    <Compile Include="Util\MeshProcessing.cs" />
     <Compile Include="Mode.cs" />
+    <Compile Include="Optimization\IOptimizer.cs" />
+    <Compile Include="Optimization\SSDROptimizer.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Util\FileProcessing.cs" />
