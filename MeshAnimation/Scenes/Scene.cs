@@ -27,6 +27,16 @@ namespace MeshAnimation.Scenes
         {
             var loader = new ObjLoader();
             loader.Load(filename);
+            return LoadObject(loader, vertexShaderPath, fragmentShaderPath);
+        }
+
+        /// <summary>
+        /// Temporary test method for loading objects
+        /// </summary>
+        /// <param name="loader">Loader with a preloaded mesh</param>
+        /// <returns>GameObject represented by mesh at the given path</returns>
+        protected static GameObject LoadObject(MeshLoader loader, string vertexShaderPath = "Shaders/basic.vert", string fragmentShaderPath = "Shaders/basic.frag")
+        {
             if (loader.Normals == null || loader.Normals.Length == 0)
                 MeshProcessing.CalculateNormals(loader);
 

@@ -16,6 +16,11 @@ namespace OpenTkRenderer.Rendering
     public class GameObject
     {
         /// <summary>
+        /// GameObject will only render if it is not disabled
+        /// </summary>
+        public bool disabled;
+
+        /// <summary>
         /// GameObject representation
         /// </summary>
         public Mesh mesh;
@@ -36,6 +41,8 @@ namespace OpenTkRenderer.Rendering
         /// <param name="scene">The parent scene</param>
         public void Render(Scene scene)
         {
+            if (disabled) return;
+
             material.Set(scene, transform);
             mesh.Render();
             material.Clear();

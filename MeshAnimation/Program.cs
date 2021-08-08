@@ -61,7 +61,8 @@ namespace MeshAnimation
             var window = new OpenTkWindow(config.windowWidth, config.windowHeight, "MeshAnimation");
 
             // This is where all the objects get added to the scene
-            DemoScene.CreateScene(animPath);
+            //DemoScene.CreateScene(animPath);
+            AnimationMockScene.CreateScene(animPath);
 
             window.Run(config.updatesPerSecond, config.framesPerSecond);
         }

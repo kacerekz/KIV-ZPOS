@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace MeshAnimation.Animation
 {
-    class Frame
+    public class Frame
     {
         private int boneCount;
 
