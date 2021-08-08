@@ -111,7 +111,7 @@ namespace MeshAnimation.Optimization
             // set transformations
             for (int f = 0; f < inAnim.Frames.Length; f++)
             {
-                for (int i = 0; i < inAnim.RestPose.Vertices.Length; i++)
+                for (int i = 0; i < boneCount; i++)
                 {
                     outAnim.Frames[f].BoneRotation[i] = km.tMatrices[f][i];
                     outAnim.Frames[f].BoneTranslation[i] = km.tVectors[f][i];
