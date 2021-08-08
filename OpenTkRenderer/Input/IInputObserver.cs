@@ -9,7 +9,7 @@ namespace OpenTkRenderer.Input
     /// <summary>
     /// Interface of a keyboard input observer
     /// </summary>
-    interface IInputObserver
+    public interface IInputObserver
     {
         /// <summary>
         /// Update after keyboard state is observed

@@ -1,6 +1,7 @@
 ﻿using MathNet.Numerics.LinearAlgebra;
 using MeshAnimation.Animation;
 using OpenTK;
+using OpenTkRenderer.Input;
 using OpenTkRenderer.Rendering;
 using OpenTkRenderer.Rendering.Meshes;
 using OpenTkRenderer.Rendering.Scenes;
@@ -13,9 +14,9 @@ using System.Threading.Tasks;
 
 namespace MeshAnimation.Scenes
 {
-    public class AnimationScene : Scene
+    public class AnimationScene : Scene, IInputObserver
     {
-        public static GameObject[] meshes;
+        public static GameObject[] gameObjects;
         public static int activeIndex;
 
         public static void CreateScene(SkinningAnimation animation)
@@ -42,8 +43,8 @@ namespace MeshAnimation.Scenes
 
 
             // Add meshes
-            GameObject[] gameObjects = new GameObject[animation.Frames.Length];
             MeshLoader[] loaders = new MeshLoader[animation.Frames.Length];
+            gameObjects = new GameObject[animation.Frames.Length];
 
             for (int i = 0; i < loaders.Length; i++)
             {
@@ -62,6 +63,12 @@ namespace MeshAnimation.Scenes
             plane.transform *= Matrix4.CreateScale(10.0f);
             plane.transform *= Matrix4.CreateTranslation(0.0f, 0.0f, -5.0f);
             SceneManager.ActiveScene.gameObjects.Add("plane", plane);
+
+
+            // Add to input map
+            InputManager.mapping["Next"] = OpenTK.Input.Key.Right;
+            InputManager.mapping["Previous"] = OpenTK.Input.Key.Left;
+            InputManager.Attach(new AnimationScene());
         }
 
         private static MeshLoader Transform(MeshLoader restPose, Dictionary<int, double>[] vertexBoneWeights, Frame frame)
@@ -96,6 +103,29 @@ namespace MeshAnimation.Scenes
             mesh.Indices = restPose.Indices;
 
             return mesh;
+        }
+
+        public void Update(IDictionary<string, bool> state)
+        {
+            if (state.ContainsKey("Next") && state["Next"])
+            {
+                gameObjects[activeIndex].disabled = true;
+                activeIndex++;
+                if (activeIndex >= gameObjects.Length)
+                    activeIndex = 0;
+                gameObjects[activeIndex].disabled = false;
+                Console.WriteLine($"Activated {activeIndex}");
+            }
+
+            if (state.ContainsKey("Previous") && state["Previous"])
+            {
+                gameObjects[activeIndex].disabled = true;
+                activeIndex--;
+                if (activeIndex < 0)
+                    activeIndex = gameObjects.Length - 1;
+                gameObjects[activeIndex].disabled = false;
+                Console.WriteLine($"Activated {activeIndex}");
+            }
         }
     }
 }

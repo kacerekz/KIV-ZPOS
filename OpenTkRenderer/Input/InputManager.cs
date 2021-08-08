@@ -10,12 +10,12 @@ namespace OpenTkRenderer.Input
     /// <summary>
     /// Manages keyboard mapping and publishes keyboard state
     /// </summary>
-    class InputManager
+    public class InputManager
     {
         /// <summary>
         /// Keyboard mapping
         /// </summary>
-        private static IDictionary<string, Key> mapping;
+        public static IDictionary<string, Key> mapping;
 
         /// <summary>
         /// Keyboard state

@@ -36,8 +36,8 @@ namespace MeshAnimation.Scenes
             var loader = new ObjLoader();
             loader.Load(files[0]);
 
-            int boneCount = 1;
-            int frameCount = 45;
+            int boneCount = 2;
+            int frameCount = 360;
 
             var animation = new SkinningAnimation(loader, boneCount, frameCount);
 
@@ -52,8 +52,8 @@ namespace MeshAnimation.Scenes
             var M = Matrix<double>.Build;
             var V = Vector<double>.Build;
 
-            double shiftY = 0.01f;
-            double rotY = (360 / frameCount) * 0.01745; // radians
+            double shiftY = 250f / frameCount;
+            double rotY = (360 * 4 / frameCount) * 0.01745; // radians
 
             for (int i = 0; i < loader.Vertices.Length; i++)
             {
@@ -69,13 +69,17 @@ namespace MeshAnimation.Scenes
                 y = loader.Vertices[i].y;
                 weight = (y - minY) / span;
                 animation.VertexBoneWeights[0].Add(i, weight);
+                animation.VertexBoneWeights[1].Add(i, 1 - weight);
             }
 
             // Now generate a translation and a rotation for each frame
             for (int i = 0; i < frameCount; i++)
             {
-                animation.Frames[i].BoneTranslation[0] = V.Dense(new double[] {0, i * shiftY, 0});
+                animation.Frames[i].BoneTranslation[0] = V.Dense(new double[] {0, i < frameCount / 2 ? i * shiftY : (frameCount - i) * shiftY, 0});
                 animation.Frames[i].BoneRotation[0] = CreateRotationY(M, i * rotY);
+             
+                animation.Frames[i].BoneTranslation[1] = V.Dense(new double[] {0, 0, 0});
+                animation.Frames[i].BoneRotation[1] = CreateRotationY(M, 0);
             }
 
             return animation;
