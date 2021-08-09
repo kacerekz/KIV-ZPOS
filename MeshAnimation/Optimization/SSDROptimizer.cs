@@ -27,6 +27,9 @@ namespace MeshAnimation.Optimization
         Vector<double>[][] corP;
         Vector<double>[][] corQ;
 
+        bool reinitInLastUpdate;
+        double lastE;
+
         /// <summary>
         /// Optimize animation
         /// </summary>
@@ -59,6 +62,8 @@ namespace MeshAnimation.Optimization
             int iteration = 0;
             while(true)
             {
+                reinitInLastUpdate = false;
+
                 // update weights
                 WeightUpdateStep();
                 // update bone transformations
@@ -199,6 +204,8 @@ namespace MeshAnimation.Optimization
                             continue;
                     }
 
+                    // TODO pStar prolly  the same in all frames
+
                     // CoR coordinates
                     Vec3f pstar = new Vec3f();
                     Vec3f qstar = new Vec3f();
@@ -321,6 +328,8 @@ namespace MeshAnimation.Optimization
             if (initCount > maxInits)
                 return false;
 
+            reinitInLastUpdate = true;
+
             // find vertex with largest reconstruction error
             double max = double.MinValue;
             int maxIndex = -1;
@@ -435,7 +444,26 @@ namespace MeshAnimation.Optimization
             throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// Check if reached convergence
+        /// - if within one iteration the objective function E has not improved by 1% and the bone transformation reinitialization is not performed
+        /// </summary>
+        /// <returns></returns>
         private bool CheckConvergence()
+        {
+            if (reinitInLastUpdate)
+                return false;
+
+            double onePerc = lastE / 100.0;
+            double currE = ComputeObjectiveFunction();
+
+            if (Math.Abs(currE - lastE) <= onePerc)
+                return true;
+
+            return false;
+        }
+
+        private double ComputeObjectiveFunction()
         {
             throw new NotImplementedException();
         }
