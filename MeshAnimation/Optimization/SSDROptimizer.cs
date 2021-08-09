@@ -24,6 +24,8 @@ namespace MeshAnimation.Optimization
         int initCount = 0;
 
         KDTree<double, int> tree;
+        Vector<double>[][] corP;
+        Vector<double>[][] corQ;
 
         /// <summary>
         /// Optimize animation
@@ -34,6 +36,19 @@ namespace MeshAnimation.Optimization
             // TODO two different paths for TVM and DMA
 
             initCount = 0;
+            corP = new Vector<double>[inAnim.Frames.Length][];
+            corQ = new Vector<double>[inAnim.Frames.Length][];
+            for (int i = 0; i < corP.Length; i++)
+            {
+                corP[i] = new Vector<double>[boneCount];
+                corQ[i] = new Vector<double>[boneCount];
+                for (int j = 0; j < boneCount; j++)
+                {
+                    corP[i][j] = Vector<double>.Build.Dense(3);
+                    corQ[i][j] = Vector<double>.Build.Dense(3);
+                }
+            }
+
             outAnim = new SkinningAnimation((ObjLoader)inAnim.RestPose, boneCount, inAnim.Frames.Length);
             this.inAnim = inAnim;
 
@@ -72,6 +87,48 @@ namespace MeshAnimation.Optimization
             KMeans km = Cluster(inAnim);
             // clustering into weight map
             PrepareOutAnimation(inAnim, km);
+            ComputeCors();
+        }
+
+        /// <summary>
+        /// Compute pStar and qStar at the beginning of the optimization
+        /// </summary>
+        private void ComputeCors()
+        {
+            // for each frame separately
+            for (int f = 0; f < inAnim.Frames.Length; f++)
+            {
+                // for each bone in a frame separately
+                for (int b = 0; b < boneCount; b++)
+                {
+                    double boneWeightSum = ComputeSignificance(b);
+
+                    // CoR coordinates
+                    Vec3f pstar = new Vec3f();
+                    Vec3f qstar = new Vec3f();
+                    Dictionary<int, double> boneWeights = outAnim.VertexBoneWeights[b];
+                    foreach (int key in boneWeights.Keys)
+                    {
+                        Vec3f multipV = inAnim.RestPose.Vertices[key].Multiplied((float)(boneWeights[key] * boneWeights[key]));
+                        pstar.Add(multipV);
+
+                        // deformation residual
+                        Vec3f q = inAnim.RestPose.Vertices[key].Subtracted(RemainingBonesResult(key, b, f));
+                        Vec3f multipQ = q.Multiplied((float)boneWeights[key]);
+                        qstar.Add(multipQ);
+                    }
+                    pstar.Divide((float)boneWeightSum);
+                    qstar.Divide((float)boneWeightSum);
+
+                  
+                    // find optimum rotation and translation
+                    Vector<double> pstarV = Vector.Build.Dense(new double[] { pstar.x, pstar.y, pstar.z });
+                    Vector<double> qstarV = Vector.Build.Dense(new double[] { qstar.x, qstar.y, qstar.z });
+
+                    corP[f][b] = pstarV;
+                    corQ[f][b] = qstarV;
+                }
+            }
         }
 
         /// <summary>
@@ -193,6 +250,9 @@ namespace MeshAnimation.Optimization
                     Vector<double> qstarV = Vector.Build.Dense(new double[] { qstar.x, qstar.y, qstar.z });
                     Matrix<double> boneRotation = V * UT;
                     Vector<double> boneTranslation = qstarV - boneRotation * pstarV;
+
+                    corP[f][b] = pstarV;
+                    corQ[f][b] = qstarV;
 
                     // store iun outAnim
                     outAnim.Frames[f].BoneRotation[b] = boneRotation;
