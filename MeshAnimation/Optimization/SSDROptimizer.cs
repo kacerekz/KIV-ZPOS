@@ -439,8 +439,60 @@ namespace MeshAnimation.Optimization
 
         private void WeightUpdateStep()
         {
-            // FASM algorithm
+            int vertexCount = outAnim.RestPose.Vertices.Length;
+            int frameCount = outAnim.Frames.Length;
+            int boneCount = this.boneCount;
 
+            var M = Matrix<double>.Build;
+            var V = Vector<double>.Build;
+            var W = M.Dense(vertexCount, boneCount);
+            
+            // A = 3 * frameCount, boneCount
+            // b = 3 * frameCount
+
+            for (int v = 0; v < vertexCount; v++)
+            {
+                Matrix<double> A = M.Dense(3 * frameCount, boneCount);
+                Vector<double> b = V.Dense(3 * frameCount);
+
+                for (int frame = 0; frame < frameCount; frame++)
+                {
+                    // Fill A
+                    for (int bone = 0; bone < boneCount; bone++)
+                    {
+                        Matrix<double> rotation = outAnim.Frames[frame].BoneRotation[bone];
+                        Vector<double> translation = outAnim.Frames[frame].BoneTranslation[bone];
+                        Vector<double> restVertex = outAnim.RestPose.Vertices[v].ToVector();
+                        Vector<double> centerOfRotation = GetRestCoR(v, bone);
+
+                        Vector<double> rotated = rotation * (restVertex - centerOfRotation);
+
+                        A[3 * frame + 0, bone] = rotated[0] + translation[0];
+                        A[3 * frame + 1, bone] = rotated[1] + translation[1];
+                        A[3 * frame + 2, bone] = rotated[2] + translation[2];
+                    }
+
+                    // Fill B
+                    b[3 * frame + 0] = inAnim.Frames[frame].Vertices[v].x;
+                    b[3 * frame + 1] = inAnim.Frames[frame].Vertices[v].y;
+                    b[3 * frame + 2] = inAnim.Frames[frame].Vertices[v].z;
+                }
+
+                // Solve system the first time
+
+
+
+
+            }
+
+            // Transform W into our
+
+
+            throw new NotImplementedException();
+        }
+
+        private Vector<double> GetRestCoR(int v, int bone)
+        {
             throw new NotImplementedException();
         }
 
@@ -472,5 +524,13 @@ namespace MeshAnimation.Optimization
         {
             throw new NotImplementedException();
         }
+    }
+}
+
+public static class Vec3fExt
+{
+    public static Vector<double> ToVector(this Vec3f v)
+    {
+        return Vector<double>.Build.Dense(new double[] { v.x, v.y, v.z });
     }
 }
