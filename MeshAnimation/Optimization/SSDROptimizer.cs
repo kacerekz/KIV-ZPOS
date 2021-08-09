@@ -463,9 +463,41 @@ namespace MeshAnimation.Optimization
             return false;
         }
 
+        /// <summary>
+        /// Calculates the value of the objective function E
+        /// </summary>
+        /// <returns></returns>
         private double ComputeObjectiveFunction()
         {
-            throw new NotImplementedException();
+
+            // E = \sum_{t=1}^{|t|} \sum_{i=1}^{|V|} \| v_i^t - \sum_{j=1}^{|B|} w_{ij}(R_j^t p_i + T_j^t) \|^2
+
+            double eVal = 0;
+            for (int f = 0; f < outAnim.Frames.Length; f++)
+            {
+                for (int i = 0; i < outAnim.RestPose.Vertices.Length; i++)
+                {
+                    Vector<double> vif = Vector<double>.Build.Dense(new double[] { inAnim.Frames[f].Vertices[i].x, inAnim.Frames[f].Vertices[i].y, inAnim.Frames[f].Vertices[i].z });
+
+                    Vector<double> ri = Vector<double>.Build.Dense(new double[] { outAnim.RestPose.Vertices[i].x, outAnim.RestPose.Vertices[i].y, outAnim.RestPose.Vertices[i].z });
+                    Vector<double> pi = Vector<double>.Build.Dense(3, 0);
+                    for (int b = 0; b < boneCount; b++)
+                    {
+                        if (outAnim.VertexBoneWeights[b].ContainsKey(i))
+                        {
+                            double weight = outAnim.VertexBoneWeights[b][i];
+
+                            pi += (weight * (outAnim.Frames[f].BoneRotation[b] * ri + outAnim.Frames[f].BoneTranslation[b]));
+                        }
+                    }
+
+                    Vector<double> res = vif - pi;
+                    eVal += res.Norm(2);
+
+                }
+            }
+
+            return eVal;
         }
 
         private void CorrectRestPose()
