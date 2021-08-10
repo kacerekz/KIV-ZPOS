@@ -8,11 +8,13 @@ using System;
 using System.Collections.Generic;
 using Supercluster.KDTree;
 using MeshAnimation.DataStructures;
+using Accord.Statistics.Models.Regression.Fitting;
 
 namespace MeshAnimation.Optimization
 {
     class SSDROptimizer : IOptimizer
     {
+        public int significantBoneCount = 4;
         public int boneCount = 9;
         public int maxIterations = 1000;
         int maxInits = 10;
@@ -443,17 +445,18 @@ namespace MeshAnimation.Optimization
             int frameCount = outAnim.Frames.Length;
             int boneCount = this.boneCount;
 
-            var M = Matrix<double>.Build;
             var V = Vector<double>.Build;
-            var W = M.Dense(vertexCount, boneCount);
-            
-            // A = 3 * frameCount, boneCount
-            // b = 3 * frameCount
 
             for (int v = 0; v < vertexCount; v++)
             {
-                Matrix<double> A = M.Dense(3 * frameCount, boneCount);
-                Vector<double> b = V.Dense(3 * frameCount);
+                var restVertex = outAnim.RestPose.Vertices[v].ToVector();
+                var A = new double[3 * frameCount][];
+                var b = new double[3 * frameCount];
+
+                for (int frame = 0; frame < 3 * frameCount; frame++)
+                {
+                    A[frame] = new double[boneCount];
+                }
 
                 for (int frame = 0; frame < frameCount; frame++)
                 {
@@ -462,14 +465,13 @@ namespace MeshAnimation.Optimization
                     {
                         Matrix<double> rotation = outAnim.Frames[frame].BoneRotation[bone];
                         Vector<double> translation = outAnim.Frames[frame].BoneTranslation[bone];
-                        Vector<double> restVertex = outAnim.RestPose.Vertices[v].ToVector();
                         Vector<double> centerOfRotation = GetRestCoR(v, bone);
 
                         Vector<double> rotated = rotation * (restVertex - centerOfRotation);
 
-                        A[3 * frame + 0, bone] = rotated[0] + translation[0];
-                        A[3 * frame + 1, bone] = rotated[1] + translation[1];
-                        A[3 * frame + 2, bone] = rotated[2] + translation[2];
+                        A[3 * frame + 0][bone] = rotated[0] + translation[0];
+                        A[3 * frame + 1][bone] = rotated[1] + translation[1];
+                        A[3 * frame + 2][bone] = rotated[2] + translation[2];
                     }
 
                     // Fill B
@@ -479,16 +481,61 @@ namespace MeshAnimation.Optimization
                 }
 
                 // Solve system the first time
+                var nnls = new NonNegativeLeastSquares();
+                var regression = nnls.Learn(A, b);
+                var weights = regression.Weights;
 
+                // Retrieve the most significant weights
+                double[] effects = new double[boneCount];
 
+                for (int frame = 0; frame < frameCount; frame++)
+                {
+                    for (int bone = 0; bone < boneCount; bone++)
+                    {
+                        var x = weights[bone] * A[3 * frame + 0][bone];
+                        var y = weights[bone] * A[3 * frame + 1][bone];
+                        var z = weights[bone] * A[3 * frame + 2][bone];
 
+                        var moved = V.Dense(new double[] {x, y, z});
+
+                        effects[bone] += (moved - restVertex).L2Norm();
+                    }
+                }
+
+                int[] indices = new int[boneCount];
+                for (int i = 0; i < boneCount; i++)
+                    indices[i] = i;
+
+                Array.Sort(effects, indices);
+                Array.Reverse(indices);
+
+                // Recereate A
+                var A_sig = new double[3 * frameCount][];
+
+                for (int frame = 0; frame < 3 * frameCount; frame++)
+                {
+                    A_sig[frame] = new double[significantBoneCount];
+
+                    for (int sigBone = 0; sigBone < significantBoneCount; sigBone++)
+                    {
+                        A[3 * frame + 0][sigBone] = A[3 * frame + 0][indices[sigBone]];
+                        A[3 * frame + 1][sigBone] = A[3 * frame + 1][indices[sigBone]];
+                        A[3 * frame + 2][sigBone] = A[3 * frame + 2][indices[sigBone]];
+                    }
+                }
+
+                // Solve again
+                nnls = new NonNegativeLeastSquares();
+                regression = nnls.Learn(A_sig, b);
+                weights = regression.Weights;
+
+                // Place weights to appropriate positions
+                for (int sigBone = 0; sigBone < significantBoneCount; sigBone++)
+                {
+                    outAnim.VertexBoneWeights[indices[sigBone]][v] = weights[sigBone];                    
+                }
 
             }
-
-            // Transform W into our
-
-
-            throw new NotImplementedException();
         }
 
         private Vector<double> GetRestCoR(int v, int bone)
