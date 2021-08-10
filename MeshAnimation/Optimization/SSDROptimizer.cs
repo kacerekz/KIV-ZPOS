@@ -8,13 +8,11 @@ using System;
 using System.Collections.Generic;
 using Supercluster.KDTree;
 using MeshAnimation.DataStructures;
-using Accord.Statistics.Models.Regression.Fitting;
 
 namespace MeshAnimation.Optimization
 {
     class SSDROptimizer : IOptimizer
     {
-        public int significantBoneCount = 4;
         public int boneCount = 9;
         public int maxIterations = 1000;
         int maxInits = 10;
@@ -668,13 +666,5 @@ namespace MeshAnimation.Optimization
             // TODO 
             // throw new NotImplementedException();
         }
-    }
-}
-
-public static class Vec3fExt
-{
-    public static Vector<double> ToVector(this Vec3f v)
-    {
-        return Vector<double>.Build.Dense(new double[] { v.x, v.y, v.z });
     }
 }
