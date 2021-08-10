@@ -58,8 +58,8 @@ namespace OpenTkRenderer.Rendering.Meshes
                             if (line.Contains("/"))
                             {
                                 var splitx = split[1].Split('/');
-                                var splity = split[1].Split('/');
-                                var splitz = split[1].Split('/');
+                                var splity = split[2].Split('/');
+                                var splitz = split[3].Split('/');
 
                                 var f = new Vec3i
                                 {

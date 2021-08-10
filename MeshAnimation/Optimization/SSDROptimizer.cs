@@ -22,7 +22,7 @@ namespace MeshAnimation.Optimization
         SkinningAnimation outAnim;
         IAnimation inAnim;
 
-        public float sigEpsilon;
+        public float sigEpsilon = 3;
         int initCount = 0;
 
         KDTree<double, int> tree;
@@ -58,12 +58,15 @@ namespace MeshAnimation.Optimization
             this.inAnim = inAnim;
 
             // initialize
+            Console.WriteLine("Init step");
             InitializationStep();
 
             // start loop
             int iteration = 0;
             while(true)
             {
+                Console.WriteLine("Iteration " + iteration);
+
                 reinitInLastUpdate = false;
 
                 // update weights
@@ -90,8 +93,11 @@ namespace MeshAnimation.Optimization
         /// <param name="outAnim"> Output skinning animation </param>
         private void InitializationStep()
         {
+            Console.WriteLine("Clustering");
             // clustering
             KMeans km = Cluster(inAnim);
+
+            Console.WriteLine("Preparing out animation");
             // clustering into weight map
             PrepareOutAnimation(inAnim, km);
             ComputeCors();
@@ -171,7 +177,7 @@ namespace MeshAnimation.Optimization
             // set weight map
             for (int i = 0; i < km.BoneClusters.Count; i++)
                 for (int j = 0; j < km.BoneClusters[i].Length; j++)
-                    outAnim.VertexBoneWeights[km.BoneClusters[i][j]].Add(i, 1);
+                    outAnim.VertexBoneWeights[i].Add(km.BoneClusters[i][j], 1);
 
             // set transformations
             for (int f = 0; f < inAnim.Frames.Length; f++)
@@ -194,13 +200,21 @@ namespace MeshAnimation.Optimization
         /// </summary>
         private void BoneTransformUpdateStep()
         {
+            Console.WriteLine("Bone update");
+
             // for each frame separately
             for (int f = 0; f < inAnim.Frames.Length; f++)
             {
+                Console.WriteLine("frame " + f);
+
                 // for each bone in a frame separately
                 for (int b = 0; b < boneCount; b++)
                 {
+                    Console.WriteLine("bone " + b);
+
                     double boneWeightSum = ComputeSignificance(b);
+
+                    Console.WriteLine(boneWeightSum);
 
                     // if bone is insignificant
                     if (boneWeightSum < sigEpsilon)
@@ -217,15 +231,18 @@ namespace MeshAnimation.Optimization
                     Vec3f pstar = new Vec3f();
                     Vec3f qstar = new Vec3f();
                     Dictionary<int, double> boneWeights = outAnim.VertexBoneWeights[b];
+
                     foreach (int key in boneWeights.Keys)
                     {
                         Vec3f multipV = inAnim.RestPose.Vertices[key].Multiplied((float)(boneWeights[key]* boneWeights[key]));
                         pstar.Add(multipV);
 
                         // deformation residual
-                        Vec3f q = inAnim.RestPose.Vertices[key].Subtracted(RemainingDeformation(key, b, f));
+                        Vec3f q = inAnim.Frames[f].Vertices[key].Subtracted(RemainingDeformation(key, b, f));
                         Vec3f multipQ = q.Multiplied((float)boneWeights[key]);
                         qstar.Add(multipQ);
+
+                        // Console.WriteLine(qstar.x + " " + qstar.y + " " + qstar.z);
                     }
                     pstar.Divide((float)boneWeightSum);
                     qstar.Divide((float)boneWeightSum);
@@ -237,9 +254,10 @@ namespace MeshAnimation.Optimization
                     {
                         // vertex pos
                         Vec3f v = inAnim.RestPose.Vertices[i];
+                        Vec3f vf = inAnim.Frames[f].Vertices[i];
 
                         // deformation residual
-                        Vec3f q = v.Subtracted(RemainingDeformation(i, b, f)); 
+                        Vec3f q = vf.Subtracted(RemainingDeformation(i, b, f)); 
 
                         double weight = 0;
                         if (boneWeights.ContainsKey(i))
@@ -251,13 +269,18 @@ namespace MeshAnimation.Optimization
 
                         Vec3f qNew = q.Subtracted(qstar.Multiplied((float)weight));
                         Q.SetColumn(i, new double[] { qNew.x, qNew.y, qNew.z });
+
+                        // Console.WriteLine("p" + i + " " + weight * pNew.x + " " + weight * pNew.y + " " + weight * pNew.z);
+                        // Console.WriteLine("q" + i + " " + qNew.x + " " + qNew.y + " " + qNew.z);
                     }
 
                     // SVD
+                    // Console.WriteLine("Before svd");
                     Matrix<double> m = P * Q.Transpose();
                     var resSvd = m.Svd();
                     Matrix<double> UT = resSvd.U.Transpose();
                     Matrix<double> V = resSvd.VT.Transpose();
+                    // Console.WriteLine("After svd");
 
                     // find optimum rotation and translation
                     Vector<double> pstarV = Vector.Build.Dense(new double[] { pstar.x, pstar.y, pstar.z });
@@ -334,8 +357,12 @@ namespace MeshAnimation.Optimization
         /// <returns> Returns false if unsuccessfull (aka a bone has been re-initialized too many times), true if successfull  </returns>
         private bool ReInitializeBone(int b)
         {
-            if (initCount > maxInits)
-                return false;
+            Console.WriteLine("Re-init pending");
+
+            // if (initCount > maxInits)
+            //    return false;
+
+            Console.WriteLine("Re-init in progress");
 
             reinitInLastUpdate = true;
 
@@ -407,6 +434,8 @@ namespace MeshAnimation.Optimization
             // increase re-init counter
             initCount++;
 
+            Console.WriteLine("Re-init done");
+
             return true;
         }
 
@@ -453,8 +482,16 @@ namespace MeshAnimation.Optimization
             return sum;
         }
 
+        /// <summary>
+        /// Update weights
+        /// </summary>
         private void WeightUpdateStep()
         {
+            Console.WriteLine("Weight update");
+
+            for (int b = 0; b < outAnim.VertexBoneWeights.Length; b++)
+                outAnim.VertexBoneWeights[b] = new Dictionary<int, double>();
+
             int vertexCount = outAnim.RestPose.Vertices.Length;
             int frameCount = outAnim.Frames.Length;
             int boneCount = this.boneCount;
@@ -529,7 +566,10 @@ namespace MeshAnimation.Optimization
                 for (int frame = 0; frame < 3 * frameCount; frame++)
                 {
                     A_sig[frame] = new double[significantBoneCount];
+                }
 
+                for (int frame = 0; frame < frameCount; frame++)
+                {
                     for (int sigBone = 0; sigBone < significantBoneCount; sigBone++)
                     {
                         A[3 * frame + 0][sigBone] = A[3 * frame + 0][indices[sigBone]];
@@ -554,7 +594,8 @@ namespace MeshAnimation.Optimization
 
         private Vector<double> GetRestCoR(int v, int bone)
         {
-            throw new NotImplementedException();
+            return corP[0][bone];
+            // throw new NotImplementedException();
         }
 
         /// <summary>
@@ -597,14 +638,6 @@ namespace MeshAnimation.Optimization
             return eVal;
         }
 
-
-        private void WeightUpdateStep()
-        {
-            // FASM algorithm
-
-            throw new NotImplementedException();
-        }
-
         /// <summary>
         /// Check if reached convergence
         /// - if within one iteration the objective function E has not improved by 1% and the bone transformation reinitialization is not performed
@@ -620,15 +653,20 @@ namespace MeshAnimation.Optimization
 
             // improved by 1% or more
             if ((lastE - currE) >= onePerc)
+            {
+                lastE = currE;
                 return true;
+            }
 
+            lastE = currE;
             return false;
         }
 
        
         private void CorrectRestPose()
         {
-            throw new NotImplementedException();
+            // TODO 
+            // throw new NotImplementedException();
         }
     }
 }

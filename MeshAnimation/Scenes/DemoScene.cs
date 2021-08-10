@@ -15,6 +15,7 @@ using OpenTkRenderer.Rendering.Materials;
 using OpenTkRenderer.Rendering.Meshes;
 using OpenTkRenderer.Rendering.Scenes;
 using OpenTkRenderer.Structs;
+using MeshAnimation.Optimization;
 
 namespace MeshAnimation.Scenes
 {
@@ -29,11 +30,12 @@ namespace MeshAnimation.Scenes
         /// <param name="path">path to animation</param>
         public static void CreateScene(string path)
         {
+            SkinningAnimation a = OptimizeAnimation(path);
+
             // loading animation
             IAnimation anim = LoadAnimation(path);
             GameObject restPose = LoadRestPose(anim);
-            restPose.transform *= Matrix4.CreateScale(0.03f); // jump 0.03 scale, samba 1 scale
-            // TODO load rest pose -> display w/ colours
+            restPose.transform *= Matrix4.CreateScale(1); // jump 0.03 scale, samba 1 scale
 
             GameObject teapot = LoadObject("Data/teapot.obj");
             GameObject plane = LoadObject("Data/plane.obj");
@@ -64,6 +66,18 @@ namespace MeshAnimation.Scenes
             SceneManager.ActiveScene.gameObjects.Add("restPose", restPose);
         }
 
+        private static SkinningAnimation OptimizeAnimation(string foldername)
+        {
+            // load animation
+            IAnimation anim = new DMAnimation();
+            anim.LoadAnimation(foldername);
+
+            SSDROptimizer op = new SSDROptimizer();
+            SkinningAnimation res = op.Optimize(anim);
+
+            return res;
+        }
+
         /// <summary>
         /// Temporary test method - load rest pose of animation into a game object
         /// </summary>
@@ -92,6 +106,8 @@ namespace MeshAnimation.Scenes
             return testObject;
         }
 
+
+
         /// <summary> 
         /// Temporary test method - load animation
         /// </summary>
@@ -105,7 +121,7 @@ namespace MeshAnimation.Scenes
 
             // cluster
             KMeans km = new KMeans();
-            km.BoneCount = 9;
+            km.BoneCount = 3; // 9 for data
 
             ObjLoader[] objs = new ObjLoader[anim.Frames.Length];
             for (int f = 0; f < anim.Frames.Length; f++)
@@ -124,8 +140,12 @@ namespace MeshAnimation.Scenes
                 color.y = (float)r.NextDouble();
                 color.z = (float)r.NextDouble();
 
+                Console.WriteLine(color.x + " " + color.y + " " + color.z);
+
                 for (int j = 0; j < km.BoneClusters[i].Length; j++)
+                {
                     anim.RestPose.Colors[km.BoneClusters[i][j]] = color;
+                }
             }
 
             return anim;

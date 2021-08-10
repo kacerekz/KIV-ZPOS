@@ -1,4 +1,5 @@
 ﻿using MeshAnimation.Animation;
+using MeshAnimation.Optimization;
 using MeshAnimation.Scenes;
 using MeshAnimation.Util;
 
@@ -25,7 +26,7 @@ namespace MeshAnimation
     class Program
     {
         // TODO path to animation - debug ONLY! CHANGE IN YOUR APP!!
-        static string animPath = @"D:\moje\school\04\zpos\ZPOS data\constant connectivity\jump";
+        static string animPath = @"D:\moje\school\04\zpos\ZPOS data\constant connectivity\test2";
 
         /// <summary>
         /// Depending on the mode, the program processes or renders mesh animations
@@ -61,10 +62,23 @@ namespace MeshAnimation
             var window = new OpenTkWindow(config.windowWidth, config.windowHeight, "MeshAnimation");
 
             // This is where all the objects get added to the scene
-            //DemoScene.CreateScene(animPath);
-            AnimationMockScene.CreateScene(animPath);
+            // DemoScene.CreateScene(animPath);
+            SkinningAnimation a = OptimizeAnimation(animPath);
+            AnimationScene.CreateScene(a);
 
             window.Run(config.updatesPerSecond, config.framesPerSecond);
+        }
+
+        private static SkinningAnimation OptimizeAnimation(string foldername)
+        {
+            // load animation
+            IAnimation anim = new DMAnimation();
+            anim.LoadAnimation(foldername);
+
+            SSDROptimizer op = new SSDROptimizer();
+            SkinningAnimation res = op.Optimize(anim);
+
+            return res;
         }
 
         /// <summary>
