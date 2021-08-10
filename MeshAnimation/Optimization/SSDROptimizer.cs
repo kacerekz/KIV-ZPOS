@@ -95,6 +95,7 @@ namespace MeshAnimation.Optimization
             ComputeCors();
         }
 
+        //TODO eh
         /// <summary>
         /// Compute pStar and qStar at the beginning of the optimization
         /// </summary>
@@ -118,7 +119,7 @@ namespace MeshAnimation.Optimization
                         pstar.Add(multipV);
 
                         // deformation residual
-                        Vec3f q = inAnim.RestPose.Vertices[key].Subtracted(RemainingBonesResult(key, b, f));
+                        Vec3f q = inAnim.RestPose.Vertices[key].Subtracted(RemainingDeformation(key, b, f));
                         Vec3f multipQ = q.Multiplied((float)boneWeights[key]);
                         qstar.Add(multipQ);
                     }
@@ -182,6 +183,10 @@ namespace MeshAnimation.Optimization
 
         }
 
+        // TODO read!
+        // pstar stejné pro všechny frames -> P stejné pro všechny frames
+        // otočit cyklus -> pro všechny bones ve všech frames  a vyhodit P nad cyklus pro frames
+
         /// <summary>
         /// Bone rotation and translation update step
         /// </summary>
@@ -216,7 +221,7 @@ namespace MeshAnimation.Optimization
                         pstar.Add(multipV);
 
                         // deformation residual
-                        Vec3f q = inAnim.RestPose.Vertices[key].Subtracted(RemainingBonesResult(key, b, f));
+                        Vec3f q = inAnim.RestPose.Vertices[key].Subtracted(RemainingDeformation(key, b, f));
                         Vec3f multipQ = q.Multiplied((float)boneWeights[key]);
                         qstar.Add(multipQ);
                     }
@@ -232,7 +237,7 @@ namespace MeshAnimation.Optimization
                         Vec3f v = inAnim.RestPose.Vertices[i];
 
                         // deformation residual
-                        Vec3f q = v.Subtracted(RemainingBonesResult(i, b, f)); 
+                        Vec3f q = v.Subtracted(RemainingDeformation(i, b, f)); 
 
                         double weight = 0;
                         if (boneWeights.ContainsKey(i))
@@ -270,13 +275,13 @@ namespace MeshAnimation.Optimization
         }
 
         /// <summary>
-        /// Compute the resulting position of vertex v in frame f if it is transformed by all bones except b
+        /// Compute the position of vertex v in frame f if it is transformed by all bones except b
         /// </summary>
         /// <param name="v"> Vertex </param>
         /// <param name="b"> Bone </param>
         /// <param name="f"> Frame </param>
         /// <returns> Alternative position of vertex </returns>
-        private Vec3f RemainingBonesResult(int v, int b, int f)
+        private Vec3f RemainingDeformation(int v, int b, int f)
         {
             Frame frame = outAnim.Frames[f];
             Vec3f vertex = inAnim.RestPose.Vertices[v];
@@ -288,14 +293,16 @@ namespace MeshAnimation.Optimization
                 if (i == b)
                     continue;
 
-                double weight = 0;
+                // LBS
                 if (outAnim.VertexBoneWeights[b].ContainsKey(v))
-                    weight = outAnim.VertexBoneWeights[b][v];
+                {
+                    double weight = outAnim.VertexBoneWeights[b][v];
 
-                Vector<double> translation = frame.BoneTranslation[i];
-                Matrix<double> rotation = frame.BoneRotation[i];
+                    Vector<double> translation = frame.BoneTranslation[i];
+                    Matrix<double> rotation = frame.BoneRotation[i];
 
-                sum += weight * (rotation * vertexV + translation);
+                    sum += weight * (rotation * vertexV + translation);
+                }
             }
 
             Vec3f res = new Vec3f((float)sum[0], (float)sum[1], (float)sum[2]);
@@ -309,7 +316,7 @@ namespace MeshAnimation.Optimization
         /// <returns> Significance of bone </returns>
         private double ComputeSignificance(int b)
         {
-            // go through all weights for bone b, sum of pow
+            // go through all weights for bone b, sum of pow of weights assigned to this bone
             double res = 0;
             Dictionary<int, double> boneWeights =  outAnim.VertexBoneWeights[b];
             foreach (double value in boneWeights.Values)
@@ -350,32 +357,38 @@ namespace MeshAnimation.Optimization
             // find 20 nearest vertices to that vertex
             if (tree == null)
                 tree = KDTree.BuildTree(inAnim.RestPose.Vertices);
-            List<int> neighboursIndices = KDTree.GetNearest(maxIndex, 21, inAnim.RestPose.Vertices, tree);
+            List<int> neighboursIndices = KDTree.GetNearest(maxIndex, 21, outAnim.RestPose.Vertices, tree);
 
-            // assign bone to that vertex
+            // remove vertices from weight map
+            outAnim.VertexBoneWeights[b] = new Dictionary<int, double>();
             for (int i = 0; i < outAnim.VertexBoneWeights.Length; i++)
             {
                 for (int j = 0; j < neighboursIndices.Count; j++)
                 {
                     if (outAnim.VertexBoneWeights[i].ContainsKey(neighboursIndices[j]))
                         outAnim.VertexBoneWeights[i].Remove(neighboursIndices[j]);
-                    outAnim.VertexBoneWeights[b].Add(neighboursIndices[j], 1);
                 }
             }
 
-            List<Vec3f> neighbours = new List<Vec3f>();
+            // assign bone to those vertices
+            for (int j = 0; j < neighboursIndices.Count; j++)
+                outAnim.VertexBoneWeights[b].Add(neighboursIndices[j], 1);
+
+            // get coordinates of neighbours - rest pose
+            List<Vec3f> neighboursPoints = new List<Vec3f>();
             for (int i = 0; i < inAnim.RestPose.Vertices.Length; i++)
             {
                 Vec3f v = inAnim.RestPose.Vertices[i];
                 if (neighboursIndices.Contains(i))
-                    neighbours.Add(v);
+                    neighboursPoints.Add(v);
             }
 
+            // re-init rotation and translation
             Kabsch k = new Kabsch();
             for (int f = 0; f < inAnim.Frames.Length; f++)
             {
+                // get coordinates of neighbours - frame
                 List<Vec3f> neighboursInPose = new List<Vec3f>();
-
                 for (int i = 0; i < inAnim.RestPose.Vertices.Length; i++)
                 {
                     Vec3f v = inAnim.Frames[f].Vertices[i];
@@ -384,7 +397,7 @@ namespace MeshAnimation.Optimization
                 }
 
                 // re-initialize bone transformation and rotation using Kabsch algorithm
-                Matrix<double> rot = k.SolveKabsch(neighbours.ToArray(), neighboursInPose.ToArray());
+                Matrix<double> rot = k.SolveKabsch(neighboursPoints.ToArray(), neighboursInPose.ToArray());
                 outAnim.Frames[f].BoneRotation[b] = rot;
                 outAnim.Frames[f].BoneTranslation[b] = k.Translation;
             }
@@ -399,7 +412,7 @@ namespace MeshAnimation.Optimization
         /// Get reconstruction error of vertex i in animation
         /// </summary>
         /// <param name="i"> Vertex index </param>
-        /// <returns> Reconstruction error </returns>
+        /// <returns> Reconstruction error for vertex i </returns>
         private double GetVertexReconstructionError(int i)
         {
             double sum = 0;
@@ -416,14 +429,15 @@ namespace MeshAnimation.Optimization
                 Vector<double> posV = Vector.Build.Dense(3);
                 for (int b = 0; b < boneCount; b++)
                 {
-                    double weight = 0;
                     if (outAnim.VertexBoneWeights[b].ContainsKey(i))
-                        weight = outAnim.VertexBoneWeights[b][i];
+                    {
+                        double weight = outAnim.VertexBoneWeights[b][i];
 
-                    Vector<double> translation = outAnim.Frames[f].BoneTranslation[b];
-                    Matrix<double> rotation = outAnim.Frames[f].BoneRotation[b];
+                        Vector<double> translation = outAnim.Frames[f].BoneTranslation[b];
+                        Matrix<double> rotation = outAnim.Frames[f].BoneRotation[b];
 
-                    posV += weight * (rotation * vRestV + translation);
+                        posV += weight * (rotation * vRestV + translation);
+                    }
                 }
 
                 // resulting error in frame
@@ -436,6 +450,47 @@ namespace MeshAnimation.Optimization
          
             return sum;
         }
+
+        /// <summary>
+        /// Calculates the value of the objective function E of the animation
+        /// </summary>
+        /// <returns> Value of E </returns>
+        private double ComputeObjectiveFunction()
+        {
+
+            // E = \sum_{t=1}^{|t|} \sum_{i=1}^{|V|} \| v_i^t - \sum_{j=1}^{|B|} w_{ij}(R_j^t p_i + T_j^t) \|^2
+
+            double eVal = 0;
+            for (int f = 0; f < outAnim.Frames.Length; f++)
+            {
+                for (int i = 0; i < outAnim.RestPose.Vertices.Length; i++)
+                {
+                    // input vertex position
+                    Vector<double> vif = Vector<double>.Build.Dense(new double[] { inAnim.Frames[f].Vertices[i].x, inAnim.Frames[f].Vertices[i].y, inAnim.Frames[f].Vertices[i].z });
+
+                    // reconstructed vertex position
+                    Vector<double> ri = Vector<double>.Build.Dense(new double[] { outAnim.RestPose.Vertices[i].x, outAnim.RestPose.Vertices[i].y, outAnim.RestPose.Vertices[i].z });
+                    Vector<double> pi = Vector<double>.Build.Dense(3, 0);
+
+                    // LBS
+                    for (int b = 0; b < boneCount; b++)
+                    {
+                        if (outAnim.VertexBoneWeights[b].ContainsKey(i))
+                        {
+                            double weight = outAnim.VertexBoneWeights[b][i];
+
+                            pi += (weight * (outAnim.Frames[f].BoneRotation[b] * ri + outAnim.Frames[f].BoneTranslation[b]));
+                        }
+                    }
+
+                    Vector<double> res = vif - pi;
+                    eVal += res[0] * res[0] + res[1] * res[1] + res[2] * res[2];
+                }
+            }
+
+            return eVal;
+        }
+
 
         private void WeightUpdateStep()
         {
@@ -451,55 +506,20 @@ namespace MeshAnimation.Optimization
         /// <returns></returns>
         private bool CheckConvergence()
         {
-            if (reinitInLastUpdate)
+            if (reinitInLastUpdate || lastE == 0)
                 return false;
 
             double onePerc = lastE / 100.0;
             double currE = ComputeObjectiveFunction();
 
-            if (Math.Abs(currE - lastE) <= onePerc)
+            // improved by 1% or more
+            if ((lastE - currE) >= onePerc)
                 return true;
 
             return false;
         }
 
-        /// <summary>
-        /// Calculates the value of the objective function E
-        /// </summary>
-        /// <returns></returns>
-        private double ComputeObjectiveFunction()
-        {
-
-            // E = \sum_{t=1}^{|t|} \sum_{i=1}^{|V|} \| v_i^t - \sum_{j=1}^{|B|} w_{ij}(R_j^t p_i + T_j^t) \|^2
-
-            double eVal = 0;
-            for (int f = 0; f < outAnim.Frames.Length; f++)
-            {
-                for (int i = 0; i < outAnim.RestPose.Vertices.Length; i++)
-                {
-                    Vector<double> vif = Vector<double>.Build.Dense(new double[] { inAnim.Frames[f].Vertices[i].x, inAnim.Frames[f].Vertices[i].y, inAnim.Frames[f].Vertices[i].z });
-
-                    Vector<double> ri = Vector<double>.Build.Dense(new double[] { outAnim.RestPose.Vertices[i].x, outAnim.RestPose.Vertices[i].y, outAnim.RestPose.Vertices[i].z });
-                    Vector<double> pi = Vector<double>.Build.Dense(3, 0);
-                    for (int b = 0; b < boneCount; b++)
-                    {
-                        if (outAnim.VertexBoneWeights[b].ContainsKey(i))
-                        {
-                            double weight = outAnim.VertexBoneWeights[b][i];
-
-                            pi += (weight * (outAnim.Frames[f].BoneRotation[b] * ri + outAnim.Frames[f].BoneTranslation[b]));
-                        }
-                    }
-
-                    Vector<double> res = vif - pi;
-                    eVal += res.Norm(2);
-
-                }
-            }
-
-            return eVal;
-        }
-
+       
         private void CorrectRestPose()
         {
             throw new NotImplementedException();
