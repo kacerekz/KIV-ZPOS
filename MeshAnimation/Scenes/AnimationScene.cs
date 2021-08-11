@@ -52,7 +52,7 @@ namespace MeshAnimation.Scenes
                 
                 gameObjects[i] = LoadObject(loaders[i]);
                 gameObjects[i].disabled = i != 0;
-                gameObjects[i].transform *= Matrix4.CreateScale(1);
+                gameObjects[i].transform *= Matrix4.CreateScale(0.03f);
 
                 SceneManager.ActiveScene.gameObjects.Add($"{i}", gameObjects[i]);
             }
