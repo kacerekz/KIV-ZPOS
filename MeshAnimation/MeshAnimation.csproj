@@ -103,6 +103,7 @@
     <Compile Include="Clustering\KMeansUtils.cs" />
     <Compile Include="Config.cs" />
     <Compile Include="DataStructures\KDTree.cs" />
+    <Compile Include="Optimization\GeneticOtpimizer.cs" />
     <Compile Include="Scenes\AnimationMockScene.cs" />
     <Compile Include="Scenes\AnimationScene.cs" />
     <Compile Include="Scenes\DemoScene.cs" />

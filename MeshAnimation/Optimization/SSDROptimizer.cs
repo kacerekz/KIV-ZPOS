@@ -10,13 +10,14 @@ using Supercluster.KDTree;
 using MeshAnimation.DataStructures;
 using Accord.Statistics.Models.Regression.Fitting;
 using Accord.Math.Optimization.Losses;
+using Accord.Statistics.Models.Regression.Linear;
 
 namespace MeshAnimation.Optimization
 {
     class SSDROptimizer : IOptimizer
     {
         public int significantBoneCount = 4;
-        public int boneCount = 20;
+        public int boneCount = 9;
         public int maxIterations = 10;
         int maxInits = 10;
 
@@ -478,6 +479,7 @@ namespace MeshAnimation.Optimization
 
             Console.WriteLine("Weight update");
 
+            var oldW = outAnim.VertexBoneWeights;
             for (int b = 0; b < outAnim.VertexBoneWeights.Length; b++)
                 outAnim.VertexBoneWeights[b] = new Dictionary<int, double>();
 
@@ -489,6 +491,8 @@ namespace MeshAnimation.Optimization
 
             for (int v = 0; v < vertexCount; v++)
             {
+                Console.WriteLine("Vertex " + v + " out of " + vertexCount);
+
                 var restVertex = outAnim.RestPose.Vertices[v].ToVector();
                 var A = new double[3 * frameCount][];
                 var b = new double[3 * frameCount];
@@ -503,15 +507,19 @@ namespace MeshAnimation.Optimization
                     // Fill A
                     for (int bone = 0; bone < boneCount; bone++)
                     {
+                        double w = 0;
+                        if (oldW[bone].ContainsKey(v))
+                            w = oldW[bone][v];
+
                         Matrix<double> rotation = outAnim.Frames[frame].BoneRotation[bone];
                         Vector<double> translation = outAnim.Frames[frame].BoneTranslation[bone];
                         Vector<double> centerOfRotation = GetRestCoR(v, bone);
 
                         Vector<double> rotated = rotation * (restVertex - centerOfRotation);
 
-                        A[3 * frame + 0][bone] = rotated[0] + translation[0];
-                        A[3 * frame + 1][bone] = rotated[1] + translation[1];
-                        A[3 * frame + 2][bone] = rotated[2] + translation[2];
+                        A[3 * frame + 1][bone] = (rotated[1] + translation[1]);
+                        A[3 * frame + 2][bone] = (rotated[2] + translation[2]);
+                        A[3 * frame + 0][bone] = (rotated[0] + translation[0]);
                     }
 
                     // Fill B
@@ -521,7 +529,11 @@ namespace MeshAnimation.Optimization
                 }
 
                 // Solve system the first time
-                var nnls = new NonNegativeLeastSquares() { MaxIterations = 100 };
+                GeneticOtpimizer o = new GeneticOtpimizer(boneCount, A, b);
+                double[] weights = o.SolveForLeastSquares();
+
+                /*
+                var nnls = new NonNegativeLeastSquares() { MaxIterations = 50 };
                 var regression = nnls.Learn(A, b);
                 var weights = regression.Weights;
 
@@ -529,6 +541,7 @@ namespace MeshAnimation.Optimization
                 double[] prediction = regression.Transform(A);
                 double error = new SquareLoss(expected: b).Loss(actual: prediction); // should be 0
                 // Console.WriteLine(error);
+                */
 
                 // Retrieve the most significant weights
                 double[] effects = new double[boneCount];
@@ -573,14 +586,34 @@ namespace MeshAnimation.Optimization
                 }
 
                 // Solve again
-                nnls = new NonNegativeLeastSquares() { MaxIterations = 1000 };
+                o = new GeneticOtpimizer(significantBoneCount, A_sig, b);
+                weights = o.SolveForLeastSquares();
+
+                /*
+                nnls = new NonNegativeLeastSquares() { MaxIterations = 50 };
                 regression = nnls.Learn(A_sig, b);
                 weights = regression.Weights;
+                */
 
                 double sum = 0;
 
+                bool r = false;
                 for (int i = 0; i < weights.Length; i++)
+                {
                     sum += weights[i];
+                    if (weights[i] < 0)
+                        r = true;
+                }
+
+                if (r)
+                {
+                    for (int i = 0; i < weights.Length; i++)
+                    {
+                        if (weights[i] > sum)
+                            sum = weights[i];
+                    }
+                }
+
 
                 if (sum != 0)
                 {
@@ -675,8 +708,55 @@ namespace MeshAnimation.Optimization
        
         private void CorrectRestPose()
         {
-            // TODO 
-            // throw new NotImplementedException();
+            return;
+
+            // TODO matrix is rank defficient 
+            int frameCount = outAnim.Frames.Length;
+            var oldW = outAnim.VertexBoneWeights;
+
+            for (int i = 0; i < outAnim.RestPose.Vertices.Length; i++) {
+                var restVertex = outAnim.RestPose.Vertices[i].ToVector();
+                var A = new double[3 * frameCount][];
+                var b = new double[3 * frameCount];
+
+                for (int frame = 0; frame < 3 * frameCount; frame++)
+                {
+                    A[frame] = new double[boneCount];
+                }
+
+                for (int frame = 0; frame < frameCount; frame++)
+                {
+                    // Fill A
+                    for (int row = 0; row < 3; row++)
+                    {
+                        for (int bone = 0; bone < boneCount; bone++)
+                        {
+                            double w = 0;
+                            if (oldW[bone].ContainsKey(i))
+                                w = oldW[bone][i];
+
+                            Matrix<double> rotation = outAnim.Frames[frame].BoneRotation[bone];
+                            Vector<double> translation = outAnim.Frames[frame].BoneTranslation[bone];
+
+                            Vector<double> rotated = Vector<double>.Build.Dense(new double[] { rotation[row, 0], rotation[row, 1], rotation[row, 2] });
+
+                            A[3 * frame + 1][0] += w * (rotated[0] + translation[0]);
+                            A[3 * frame + 2][1] += w * (rotated[1] + translation[1]);
+                            A[3 * frame + 0][2] += w * (rotated[2] + translation[2]);
+                        }
+                    }
+
+                    // Fill B
+                    b[3 * frame + 0] = inAnim.Frames[frame].Vertices[i].x;
+                    b[3 * frame + 1] = inAnim.Frames[frame].Vertices[i].y;
+                    b[3 * frame + 2] = inAnim.Frames[frame].Vertices[i].z;
+                }
+
+                OrdinaryLeastSquares ols = new OrdinaryLeastSquares();
+                var r = ols.Learn(A, b);
+                double[] res = r.Weights;
+
+            }
         }
 
     }
