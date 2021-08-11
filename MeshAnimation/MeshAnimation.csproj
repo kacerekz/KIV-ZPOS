@@ -108,6 +108,8 @@
     <Compile Include="Scenes\AnimationScene.cs" />
     <Compile Include="Scenes\DemoScene.cs" />
     <Compile Include="Scenes\Scene.cs" />
+    <Compile Include="Util\AnimationExporter.cs" />
+    <Compile Include="Util\AnimationImporter.cs" />
     <Compile Include="Util\MeshProcessing.cs" />
     <Compile Include="Mode.cs" />
     <Compile Include="Optimization\IOptimizer.cs" />

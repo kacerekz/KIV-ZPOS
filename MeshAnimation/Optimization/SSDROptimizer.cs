@@ -528,11 +528,12 @@ namespace MeshAnimation.Optimization
                     b[3 * frame + 2] = inAnim.Frames[frame].Vertices[v].z;
                 }
 
+                /*
                 // Solve system the first time
                 GeneticOtpimizer o = new GeneticOtpimizer(boneCount, A, b, true);
                 double[] weights = o.SolveForLeastSquares();
+                */
 
-                /*
                 var nnls = new NonNegativeLeastSquares() { MaxIterations = 50 };
                 var regression = nnls.Learn(A, b);
                 var weights = regression.Weights;
@@ -541,7 +542,6 @@ namespace MeshAnimation.Optimization
                 double[] prediction = regression.Transform(A);
                 double error = new SquareLoss(expected: b).Loss(actual: prediction); // should be 0
                 // Console.WriteLine(error);
-                */
 
                 // Retrieve the most significant weights
                 double[] effects = new double[boneCount];
@@ -586,14 +586,14 @@ namespace MeshAnimation.Optimization
                 }
 
                 // Solve again
+                /*
                 o = new GeneticOtpimizer(significantBoneCount, A_sig, b, false);
                 weights = o.SolveForLeastSquares();
+                */
 
-                /*
                 nnls = new NonNegativeLeastSquares() { MaxIterations = 50 };
                 regression = nnls.Learn(A_sig, b);
                 weights = regression.Weights;
-                */
 
                 double sum = 0;
 

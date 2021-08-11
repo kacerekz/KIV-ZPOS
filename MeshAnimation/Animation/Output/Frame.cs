@@ -22,5 +22,11 @@ namespace MeshAnimation.Animation
             BoneTranslation = new Vector<double>[boneCount];
         }
 
+        /// <summary>
+        /// Empty constructor for serialization
+        /// </summary>
+        public Frame()
+        {
+        }
     }
 }

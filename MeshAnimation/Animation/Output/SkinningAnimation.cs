@@ -44,5 +44,12 @@ namespace MeshAnimation.Animation
                 Frames[i] = new Frame(boneCount);
         }
 
+        /// <summary>
+        /// Empty constructor for serialization
+        /// </summary>
+        public SkinningAnimation()
+        {
+        }
+
     }
 }

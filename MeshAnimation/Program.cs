@@ -26,7 +26,7 @@ namespace MeshAnimation
     class Program
     {
         // TODO path to animation - debug ONLY! CHANGE IN YOUR APP!!
-        static string animPath = @"C:\Users\adria\Desktop\animation";
+        static string animPath = @"D:\moje\school\04\zpos\ZPOS data\constant connectivity\test2"; // "C:\Users\adria\Desktop\animation";
 
         /// <summary>
         /// Depending on the mode, the program processes or renders mesh animations
@@ -78,6 +78,9 @@ namespace MeshAnimation
             SSDROptimizer op = new SSDROptimizer();
             SkinningAnimation res = op.Optimize(anim);
 
+            // TODO test of export/import
+            AnimationExporter.ExportSkinningAnimation(res, "Homunkulus");
+            res = AnimationImporter.ImportSkinningAnimation("Homunkulus");
 
             // TODO here adding colours to restpose
             // Add meshes
@@ -102,7 +105,7 @@ namespace MeshAnimation
                 {
                     if (res.VertexBoneWeights[i][v] > w[v])
                     {
-                        anim.RestPose.Colors[v] = color;
+                        res.RestPose.Colors[v] = color;
                         w[v] = res.VertexBoneWeights[i][v];
                     }
 
