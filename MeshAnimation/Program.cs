@@ -7,7 +7,7 @@ using OpenTK;
 using OpenTkRenderer;
 using OpenTkRenderer.Rendering;
 using OpenTkRenderer.Rendering.Scenes;
-
+using OpenTkRenderer.Structs;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -26,7 +26,7 @@ namespace MeshAnimation
     class Program
     {
         // TODO path to animation - debug ONLY! CHANGE IN YOUR APP!!
-        static string animPath = @"D:\moje\school\04\zpos\ZPOS data\constant connectivity\jump";
+        static string animPath = @"D:\moje\school\04\zpos\ZPOS data\constant connectivity\test2";
 
         /// <summary>
         /// Depending on the mode, the program processes or renders mesh animations
@@ -77,6 +77,28 @@ namespace MeshAnimation
 
             SSDROptimizer op = new SSDROptimizer();
             SkinningAnimation res = op.Optimize(anim);
+
+
+            // TODO here adding colours to restpose
+            // Add meshes
+            Random r = new Random();
+            // colours according to clusters
+            res.RestPose.Colors = new Vec3f[res.RestPose.Vertices.Length];
+            for (int i = 0; i < op.boneCount; i++)
+            {
+                float step = 1.0f / (op.boneCount + 1);
+                Vec3f color = new Vec3f();
+                color.x = step * i;
+                color.y = (float)r.NextDouble();
+                color.z = (float)r.NextDouble();
+
+                Console.WriteLine(color.x + " " + color.y + " " + color.z);
+
+                foreach (int v in res.VertexBoneWeights[i].Keys)
+                {
+                    anim.RestPose.Colors[v] = color;
+                }
+            }
 
             return res;
         }

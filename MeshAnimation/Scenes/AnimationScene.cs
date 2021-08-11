@@ -3,11 +3,13 @@ using MeshAnimation.Animation;
 using OpenTK;
 using OpenTkRenderer.Input;
 using OpenTkRenderer.Rendering;
+using OpenTkRenderer.Rendering.Materials;
 using OpenTkRenderer.Rendering.Meshes;
 using OpenTkRenderer.Rendering.Scenes;
 using OpenTkRenderer.Structs;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -41,8 +43,6 @@ namespace MeshAnimation.Scenes
 
             SceneManager.ActiveScene.activeLights.Add(light);
 
-
-            // Add meshes
             MeshLoader[] loaders = new MeshLoader[animation.Frames.Length];
             gameObjects = new GameObject[animation.Frames.Length];
 
@@ -50,9 +50,10 @@ namespace MeshAnimation.Scenes
             {
                 loaders[i] = Transform(animation.RestPose, animation.VertexBoneWeights, animation.Frames[i]);
                 
-                gameObjects[i] = LoadObject(loaders[i]);
+                // TODO here different shader
+                gameObjects[i] = LoadObject(loaders[i], "Shaders/colours.vert", "Shaders/colours.frag");
                 gameObjects[i].disabled = i != 0;
-                gameObjects[i].transform *= Matrix4.CreateScale(0.03f);
+                gameObjects[i].transform *= Matrix4.CreateScale(1);
 
                 SceneManager.ActiveScene.gameObjects.Add($"{i}", gameObjects[i]);
             }
