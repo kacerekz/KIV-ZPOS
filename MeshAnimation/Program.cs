@@ -26,7 +26,7 @@ namespace MeshAnimation
     class Program
     {
         // TODO path to animation - debug ONLY! CHANGE IN YOUR APP!!
-        static string animPath = @"D:\moje\school\04\zpos\ZPOS data\constant connectivity\test2";
+        static string animPath = @"D:\moje\school\04\zpos\ZPOS data\constant connectivity\jump";
 
         /// <summary>
         /// Depending on the mode, the program processes or renders mesh animations

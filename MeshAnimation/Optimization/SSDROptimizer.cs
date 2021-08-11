@@ -16,7 +16,7 @@ namespace MeshAnimation.Optimization
     class SSDROptimizer : IOptimizer
     {
         public int significantBoneCount = 4;
-        public int boneCount = 9;
+        public int boneCount = 20;
         public int maxIterations = 10;
         int maxInits = 10;
 
@@ -543,7 +543,7 @@ namespace MeshAnimation.Optimization
 
                         var moved = V.Dense(new double[] { x, y, z });
 
-                        effects[bone] += moved[0] * moved[0] + moved[1] * moved[1] + moved[2] * moved[2];// (moved - restVertex).L2Norm();
+                        effects[bone] += (moved - restVertex)[0] * (moved - restVertex)[0] + (moved - restVertex)[1] * (moved - restVertex)[1] + (moved - restVertex)[2] * (moved - restVertex)[2];// (moved - restVertex).L2Norm();
                     }
                 }
 
