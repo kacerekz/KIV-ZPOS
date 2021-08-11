@@ -529,7 +529,7 @@ namespace MeshAnimation.Optimization
                 }
 
                 // Solve system the first time
-                GeneticOtpimizer o = new GeneticOtpimizer(boneCount, A, b);
+                GeneticOtpimizer o = new GeneticOtpimizer(boneCount, A, b, true);
                 double[] weights = o.SolveForLeastSquares();
 
                 /*
@@ -586,7 +586,7 @@ namespace MeshAnimation.Optimization
                 }
 
                 // Solve again
-                o = new GeneticOtpimizer(significantBoneCount, A_sig, b);
+                o = new GeneticOtpimizer(significantBoneCount, A_sig, b, false);
                 weights = o.SolveForLeastSquares();
 
                 /*
