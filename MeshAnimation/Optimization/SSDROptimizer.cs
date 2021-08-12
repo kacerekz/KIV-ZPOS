@@ -725,6 +725,7 @@ namespace MeshAnimation.Optimization
             return;
 
             // TODO matrix is rank defficient 
+            /*
             int frameCount = outAnim.Frames.Length;
             var oldW = outAnim.VertexBoneWeights;
 
@@ -769,8 +770,9 @@ namespace MeshAnimation.Optimization
                 OrdinaryLeastSquares ols = new OrdinaryLeastSquares();
                 var r = ols.Learn(A, b);
                 double[] res = r.Weights;
-
             }
+            */
+
         }
 
     }
