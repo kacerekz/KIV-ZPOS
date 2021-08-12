@@ -82,11 +82,14 @@ namespace MeshAnimation
             op.maxIterations = config.ssdrIterations;
             op.sigEpsilon = config.toleranceForReinit;
             op.significantBoneCount = config.significantBoneCount;
+            op.maxIterationsGen = config.geneticIterations;
+            op.populationSizeGen = config.generationSize;
 
             SkinningAnimation res = op.Optimize(anim, config.geneticAlgorithm);
 
             // Export animation
             AnimationExporter.ExportSkinningAnimation(res, config.outName);
+            res = AnimationImporter.ImportSkinningAnimation(config.outName);
             
             // Add colours of the mosst significant bone to each vertex
             Random r = new Random();

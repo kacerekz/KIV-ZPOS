@@ -13,8 +13,8 @@ namespace MeshAnimation.Optimization
         Matrix<double> A;
         Vector<double> b;
 
-        public int maxIterations = 10;
-        public int populationSize = 50;
+        public int maxIterations = 100;
+        public int populationSize = 100;
         public int bestToSkip = 5;
         public int cached = 10;
         

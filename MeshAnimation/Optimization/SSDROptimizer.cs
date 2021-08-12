@@ -17,6 +17,9 @@ namespace MeshAnimation.Optimization
 {
     class SSDROptimizer : IOptimizer
     {
+        public int maxIterationsGen = 100;
+        public int populationSizeGen = 100;
+
         public int significantBoneCount = 4;
         public int boneCount = 9;
         public int maxIterations = 2;
@@ -207,11 +210,8 @@ namespace MeshAnimation.Optimization
                 Vec3f pstar = new Vec3f();
                 foreach (int key in boneWeights.Keys)
                 {
-                    if (boneWeights[key] != 0)
-                    {
-                        Vec3f multipV = inAnim.RestPose.Vertices[key].Multiplied((float)(boneWeights[key] * boneWeights[key]));
-                        pstar.Add(multipV);
-                    }
+                    Vec3f multipV = inAnim.RestPose.Vertices[key].Multiplied((float)(boneWeights[key] * boneWeights[key]));
+                    pstar.Add(multipV);
                 }
                 pstar.Divide((float)boneWeightSum);
                 Vector<double> pstarV = Vector.Build.Dense(new double[] { pstar.x, pstar.y, pstar.z });
@@ -242,13 +242,10 @@ namespace MeshAnimation.Optimization
                     Vec3f qstar = new Vec3f();
                     foreach (int key in boneWeights.Keys)
                     {
-                        if (boneWeights[key] != 0)
-                        {
-                            // deformation residual
-                            Vec3f q = inAnim.Frames[f].Vertices[key].Subtracted(RemainingDeformation(key, b, f));
-                            Vec3f multipQ = q.Multiplied((float)boneWeights[key]);
-                            qstar.Add(multipQ);
-                        }
+                        // deformation residual
+                        Vec3f q = inAnim.Frames[f].Vertices[key].Subtracted(RemainingDeformation(key, b, f));
+                        Vec3f multipQ = q.Multiplied((float)boneWeights[key]);
+                        qstar.Add(multipQ);
 
                         // Console.WriteLine(qstar.x + " " + qstar.y + " " + qstar.z);
                     }
@@ -542,6 +539,8 @@ namespace MeshAnimation.Optimization
                 if (geneticAlgorithm)
                 {
                     o = new GeneticOtpimizer(boneCount, A, b, true);
+                    o.maxIterations = maxIterationsGen;
+                    o.populationSize = populationSizeGen;
                     weights = o.SolveForLeastSquares();
                 }
                 else
@@ -595,6 +594,8 @@ namespace MeshAnimation.Optimization
                 if (geneticAlgorithm)
                 {
                     o = new GeneticOtpimizer(significantBoneCount, A_sig, b, false);
+                    o.maxIterations = maxIterationsGen;
+                    o.populationSize = populationSizeGen;
                     weights = o.SolveForLeastSquares();
                 }
                 else
