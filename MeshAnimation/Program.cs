@@ -25,8 +25,7 @@ namespace MeshAnimation
     /// </summary>
     class Program
     {
-        // TODO path to animation - debug ONLY! CHANGE IN YOUR APP!!
-        static string animPath = @"D:\moje\school\04\zpos\ZPOS data\constant connectivity\jump"; // "C:\Users\adria\Desktop\animation";
+        static Config config;
 
         /// <summary>
         /// Depending on the mode, the program processes or renders mesh animations
@@ -36,9 +35,12 @@ namespace MeshAnimation
         {
             System.Threading.Thread.CurrentThread.CurrentCulture = new System.Globalization.CultureInfo("en-US");
 
-            var pathToConfigFile = (args.Length == 0) ? "config.xml" : args[0];
+            var c = new Config();
+            Serialization.Serialize<Config>(c, "./config.xml");
+
+            var pathToConfigFile = (args.Length == 0) ? "./config.xml" : args[0];
             
-            var config = File.Exists(pathToConfigFile)
+            config = File.Exists(pathToConfigFile)
                 ? Serialization.Deserialize<Config>(pathToConfigFile)
                 : new Config();
 
@@ -63,34 +65,34 @@ namespace MeshAnimation
 
             // This is where all the objects get added to the scene
             // DemoScene.CreateScene(animPath);
-            SkinningAnimation a = OptimizeAnimation(animPath);
-            AnimationScene.CreateScene(a);
+            SkinningAnimation a = OptimizeAnimation(config.path);
+            AnimationScene.CreateScene(a, config.scaleModel);
 
             window.Run(config.updatesPerSecond, config.framesPerSecond);
         }
 
         private static SkinningAnimation OptimizeAnimation(string foldername)
         {
-            // load animation
+            // Load animation
             IAnimation anim = new DMAnimation();
             anim.LoadAnimation(foldername);
 
             SSDROptimizer op = new SSDROptimizer();
-            SkinningAnimation res = op.Optimize(anim);
+            op.boneCount = config.boneCount;
+            op.maxIterations = config.ssdrIterations;
+            op.sigEpsilon = config.toleranceForReinit;
+            op.significantBoneCount = config.significantBoneCount;
 
-            // TODO test of export/import
-            AnimationExporter.ExportSkinningAnimation(res, "Homunkulus");
-            res = AnimationImporter.ImportSkinningAnimation("Homunkulus");
+            SkinningAnimation res = op.Optimize(anim, config.geneticAlgorithm);
 
-            // TODO here adding colours to restpose
-            // Add meshes
+            // Export animation
+            AnimationExporter.ExportSkinningAnimation(res, config.outName);
+            
+            // Add colours of the mosst significant bone to each vertex
             Random r = new Random();
-            // colours according to clusters
             res.RestPose.Colors = new Vec3f[res.RestPose.Vertices.Length];
             double[] w = new double[res.RestPose.Vertices.Length];
-            for (int i = 0; i < w.Length; i++)
-                w[i] = double.MinValue;
-
+            for (int i = 0; i < w.Length; i++) w[i] = double.MinValue;
             for (int i = 0; i < op.boneCount; i++)
             {
                 float step = 1.0f / (op.boneCount + 1);
@@ -98,8 +100,6 @@ namespace MeshAnimation
                 color.x = step * i;
                 color.y = (float)r.NextDouble();
                 color.z = (float)r.NextDouble();
-
-                Console.WriteLine(color.x + " " + color.y + " " + color.z);
 
                 foreach (int v in res.VertexBoneWeights[i].Keys)
                 {
@@ -121,7 +121,13 @@ namespace MeshAnimation
         /// <param name="config">Settings</param>
         private static void Process(Config config)
         {
-            Console.WriteLine("Processing mode not implemented.");
+            var window = new OpenTkWindow(config.windowWidth, config.windowHeight, "MeshAnimation");
+
+            // Load animation from file
+            SkinningAnimation a = AnimationImporter.ImportSkinningAnimation(config.path);
+            AnimationScene.CreateScene(a);
+
+            window.Run(config.updatesPerSecond, config.framesPerSecond);
         }
 
     }

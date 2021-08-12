@@ -21,7 +21,7 @@ namespace MeshAnimation.Scenes
         public static GameObject[] gameObjects;
         public static int activeIndex;
 
-        public static void CreateScene(SkinningAnimation animation)
+        public static void CreateScene(SkinningAnimation animation, float scale = 1)
         {
             // Create light
             var light = new Light(
@@ -53,7 +53,7 @@ namespace MeshAnimation.Scenes
                 // TODO here different shader
                 gameObjects[i] = LoadObject(loaders[i], "Shaders/colours.vert", "Shaders/colours.frag");
                 gameObjects[i].disabled = i != 0;
-                gameObjects[i].transform *= Matrix4.CreateScale(0.03f);
+                gameObjects[i].transform *= Matrix4.CreateScale(scale);
 
                 SceneManager.ActiveScene.gameObjects.Add($"{i}", gameObjects[i]);
             }

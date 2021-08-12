@@ -17,6 +17,52 @@ namespace MeshAnimation
         public Mode mode = Mode.Render;
 
         /// <summary>
+        /// Path to file / folder
+        /// </summary>
+        public string path = @"D:\moje\school\04\zpos\ZPOS data\constant connectivity\jump";
+
+        /// <summary>
+        /// Path to output files - without suffix
+        /// </summary>
+        public string outName = @".\jump";
+
+        /// <summary>
+        /// Number of ssdr iteration
+        /// </summary>
+        public int ssdrIterations = 1;
+
+        /// <summary>
+        /// Number of bones
+        /// </summary>
+        public int boneCount = 9;
+
+        /// <summary>
+        /// Number of significant bones
+        /// </summary>
+        public int significantBoneCount = 4;
+
+        /// <summary>
+        /// Scale model by
+        /// </summary>
+        public float scaleModel = 0.03f;
+
+        /// <summary>
+        /// Tolerance of bone influence for re-initialization
+        /// Any bone with smaller influence will be re-initialized
+        /// </summary>
+        public int toleranceForReinit = 3;
+
+        /// <summary>
+        /// Number of vertices to assign to an re-initialized bone
+        /// </summary>
+        public int neighbourCount = 200;
+
+        /// <summary>
+        /// Use genetic algorithm for weight update, other option is Non-negative least squares
+        /// </summary>
+        public bool geneticAlgorithm = false;
+
+        /// <summary>
         /// Window update frequency
         /// </summary>
         public int updatesPerSecond = 100;

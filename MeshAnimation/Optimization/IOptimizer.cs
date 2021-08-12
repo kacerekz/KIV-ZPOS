@@ -11,7 +11,7 @@ namespace MeshAnimation.Optimization
         /// </summary>
         /// <param name="anim"></param>
         /// <returns></returns>
-        SkinningAnimation Optimize(IAnimation inAnim);
+        SkinningAnimation Optimize(IAnimation inAnim, bool geneticAlgorithm = false);
 
     }
 }
