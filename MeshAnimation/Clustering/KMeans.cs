@@ -60,7 +60,7 @@ namespace MeshAnimation.Clustering
             for (int i = 0; i < res.clusters.Length; i++)
             {
                 boneClusters.Add(res.clusters[i]);
-                Console.WriteLine(res.clusters[i].Length);
+                // Console.WriteLine(res.clusters[i].Length);
             }
 
             tVectors = KMeansLib.tVectors;

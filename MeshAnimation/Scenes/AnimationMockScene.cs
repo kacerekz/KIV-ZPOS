@@ -68,8 +68,8 @@ namespace MeshAnimation.Scenes
             {
                 y = loader.Vertices[i].y;
                 weight = (y - minY) / span;
-                animation.VertexBoneWeights[0].Add(i, weight);
-                animation.VertexBoneWeights[1].Add(i, 1 - weight);
+                animation.VertexBoneWeights[0].TryAdd(i, weight);
+                animation.VertexBoneWeights[1].TryAdd(i, 1 - weight);
             }
 
             // Now generate a translation and a rotation for each frame

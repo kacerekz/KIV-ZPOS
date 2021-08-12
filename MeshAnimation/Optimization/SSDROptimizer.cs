@@ -11,6 +11,7 @@ using MeshAnimation.DataStructures;
 using Accord.Statistics.Models.Regression.Linear;
 using Accord.Statistics.Models.Regression.Fitting;
 using System.Threading.Tasks;
+using System.Collections.Concurrent;
 
 namespace MeshAnimation.Optimization
 {
@@ -55,7 +56,7 @@ namespace MeshAnimation.Optimization
                 return outAnim;
 
             // start loop
-            int iteration = 0;
+            int iteration = 1;
             while(true)
             {
                 Console.WriteLine("Iteration " + iteration);
@@ -113,7 +114,7 @@ namespace MeshAnimation.Optimization
 
                     // CoR coordinates
                     Vec3f pstar = new Vec3f();
-                    Dictionary<int, double> boneWeights = outAnim.VertexBoneWeights[b];
+                    ConcurrentDictionary<int, double> boneWeights = outAnim.VertexBoneWeights[b];
                     foreach (int key in boneWeights.Keys)
                     {
                         Vec3f multipV = inAnim.RestPose.Vertices[key].Multiplied((float)(boneWeights[key] * boneWeights[key]));
@@ -160,7 +161,7 @@ namespace MeshAnimation.Optimization
             // set weight map
             for (int i = 0; i < km.BoneClusters.Count; i++)
                 for (int j = 0; j < km.BoneClusters[i].Length; j++)
-                    outAnim.VertexBoneWeights[i].Add(km.BoneClusters[i][j], 1);
+                    outAnim.VertexBoneWeights[i].TryAdd(km.BoneClusters[i][j], 1);
 
             // set transformations
             for (int f = 0; f < inAnim.Frames.Length; f++)
@@ -191,7 +192,7 @@ namespace MeshAnimation.Optimization
                 Console.WriteLine("bone " + b);
 
                 // weights of bone b
-                Dictionary<int, double> boneWeights = outAnim.VertexBoneWeights[b];
+                ConcurrentDictionary<int, double> boneWeights = outAnim.VertexBoneWeights[b];
                 double boneWeightSum = ComputeSignificance(b);
 
                 // if bone is insignificant
@@ -339,7 +340,7 @@ namespace MeshAnimation.Optimization
         {
             // go through all weights for bone b, sum of pow of weights assigned to this bone
             double res = 0;
-            Dictionary<int, double> boneWeights =  outAnim.VertexBoneWeights[b];
+            ConcurrentDictionary<int, double> boneWeights =  outAnim.VertexBoneWeights[b];
             foreach (double value in boneWeights.Values)
                 res += value * value;
 
@@ -383,19 +384,19 @@ namespace MeshAnimation.Optimization
             List<int> neighboursIndices = KDTree.GetNearest(maxIndex, neighCount+1, outAnim.RestPose.Vertices, tree);
 
             // remove vertices from weight map
-            outAnim.VertexBoneWeights[b] = new Dictionary<int, double>();
+            outAnim.VertexBoneWeights[b] = new ConcurrentDictionary<int, double>();
             for (int i = 0; i < outAnim.VertexBoneWeights.Length; i++)
             {
                 for (int j = 0; j < neighboursIndices.Count; j++)
                 {
                     if (outAnim.VertexBoneWeights[i].ContainsKey(neighboursIndices[j]))
-                        outAnim.VertexBoneWeights[i].Remove(neighboursIndices[j]);
+                        outAnim.VertexBoneWeights[i].TryRemove(neighboursIndices[j], out double v);
                 }
             }
 
             // assign bone to those vertices
             for (int j = 0; j < neighboursIndices.Count; j++)
-                outAnim.VertexBoneWeights[b].Add(neighboursIndices[j], 1);
+                outAnim.VertexBoneWeights[b].TryAdd(neighboursIndices[j], 1);
 
             // get coordinates of neighbours - rest pose
             List<Vec3f> neighboursPoints = new List<Vec3f>();
@@ -483,7 +484,7 @@ namespace MeshAnimation.Optimization
 
             var oldW = outAnim.VertexBoneWeights;
             for (int b = 0; b < outAnim.VertexBoneWeights.Length; b++)
-                outAnim.VertexBoneWeights[b] = new Dictionary<int, double>();
+                outAnim.VertexBoneWeights[b] = new ConcurrentDictionary<int, double>();
 
             int vertexCount = outAnim.RestPose.Vertices.Length;
             int frameCount = outAnim.Frames.Length;
@@ -491,14 +492,15 @@ namespace MeshAnimation.Optimization
 
             var V = Vector<double>.Build;
 
-            GeneticOtpimizer o = null;
-            NonNegativeLeastSquares nnls = null;
-            double[] weights = null;
-            MultipleLinearRegression regression = null;
 
             Parallel.For(0, vertexCount, v => {
-            //for (int v = 0; v < vertexCount; v++)
+            // for (int v = 0; v < vertexCount; v++)
             {
+                MultipleLinearRegression regression = null;
+                    NonNegativeLeastSquares nnls = null;
+                    GeneticOtpimizer o = null;
+                    double[] weights = null;
+
                 // Console.WriteLine("Vertex " + v + " out of " + vertexCount);
 
                 var restVertex = outAnim.RestPose.Vertices[v].ToVector();
@@ -637,7 +639,7 @@ namespace MeshAnimation.Optimization
                 // Place weights to appropriate positions
                 for (int sigBone = 0; sigBone < significantBoneCount; sigBone++)
                 {
-                    outAnim.VertexBoneWeights[indices[sigBone]][v] = weights[sigBone];                    
+                        outAnim.VertexBoneWeights[indices[sigBone]].TryAdd(v, weights[sigBone]);
                 }
 
             }

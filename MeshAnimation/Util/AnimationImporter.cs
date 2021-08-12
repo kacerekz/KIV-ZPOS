@@ -2,6 +2,7 @@
 using MeshAnimation.Animation;
 using OpenTkRenderer.Rendering.Meshes;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -38,13 +39,13 @@ namespace MeshAnimation.Util
             bool loadingFrames = false;
 
             List<Frame> frames = new List<Frame>();
-            List<Dictionary<int, double>> weights = new List<Dictionary<int, double>>();
+            List<ConcurrentDictionary<int, double>> weights = new List<ConcurrentDictionary<int, double>>();
 
             Frame currFrame = null;
             List<Matrix<double>> rotations = null;
             List<Vector<double>> translations = null;
 
-            Dictionary<int, double> currWeights = null;
+            ConcurrentDictionary<int, double> currWeights = null;
             for (int i = 0; i < lines.Length; i++)
             {
                 string[] splitLine = lines[i].Split(' ');
@@ -55,7 +56,7 @@ namespace MeshAnimation.Util
 
                     if (currWeights != null)
                         weights.Add(currWeights);
-                    currWeights = new Dictionary<int, double>();
+                    currWeights = new ConcurrentDictionary<int, double>();
                 }
                 else if (splitLine[0] == "f")
                 {
@@ -111,7 +112,7 @@ namespace MeshAnimation.Util
                         double weight = 0;
                         double.TryParse(splitLine[1], out weight);
 
-                        currWeights.Add(index, weight);
+                        currWeights.TryAdd(index, weight);
                     }
                 }
 

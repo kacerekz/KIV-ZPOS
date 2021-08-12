@@ -78,7 +78,7 @@ public static class KMeansLib
         for (int i = 0; i < clustering.Length; i++)
             clusters[clustering[i]].Add(i);
 
-        Console.WriteLine(clustering.Length + " vs " + data[0].Length);
+        // Console.WriteLine(clustering.Length + " vs " + data[0].Length);
 
         int[][] realclusters = new int[clusterCount][];
         for (int k = 0; k < clusterCount; k++)

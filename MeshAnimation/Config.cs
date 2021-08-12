@@ -29,12 +29,12 @@ namespace MeshAnimation
         /// <summary>
         /// Number of ssdr iteration
         /// </summary>
-        public int ssdrIterations = 1;
+        public int ssdrIterations = 10;
 
         /// <summary>
         /// Number of bones
         /// </summary>
-        public int boneCount = 9;
+        public int boneCount = 8;
 
         /// <summary>
         /// Number of significant bones
@@ -60,7 +60,17 @@ namespace MeshAnimation
         /// <summary>
         /// Use genetic algorithm for weight update, other option is Non-negative least squares
         /// </summary>
-        public bool geneticAlgorithm = false;
+        public bool geneticAlgorithm = true;
+
+        /// <summary>
+        /// Number of individuals in one population
+        /// </summary>
+        public int generationSize = 100;
+
+        /// <summary>
+        /// Number of max iterations for the genetic algorithm
+        /// </summary>
+        public int geneticIterations = 100;
 
         /// <summary>
         /// Window update frequency

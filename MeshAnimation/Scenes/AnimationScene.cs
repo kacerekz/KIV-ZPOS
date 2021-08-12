@@ -8,6 +8,7 @@ using OpenTkRenderer.Rendering.Meshes;
 using OpenTkRenderer.Rendering.Scenes;
 using OpenTkRenderer.Structs;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -72,7 +73,7 @@ namespace MeshAnimation.Scenes
             InputManager.Attach(new AnimationScene());
         }
 
-        private static MeshLoader Transform(MeshLoader restPose, Dictionary<int, double>[] vertexBoneWeights, Frame frame)
+        private static MeshLoader Transform(MeshLoader restPose, ConcurrentDictionary<int, double>[] vertexBoneWeights, Frame frame)
         {
             Vec3f[] vertices = new Vec3f[restPose.Vertices.Length];
             int boneCount = vertexBoneWeights.Length;
