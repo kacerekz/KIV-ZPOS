@@ -8,8 +8,6 @@ using System;
 using System.Collections.Generic;
 using Supercluster.KDTree;
 using MeshAnimation.DataStructures;
-using Accord.Statistics.Models.Regression.Fitting;
-using Accord.Math.Optimization.Losses;
 using Accord.Statistics.Models.Regression.Linear;
 
 namespace MeshAnimation.Optimization
@@ -18,7 +16,7 @@ namespace MeshAnimation.Optimization
     {
         public int significantBoneCount = 4;
         public int boneCount = 9;
-        public int maxIterations = 10;
+        public int maxIterations = 2;
         int maxInits = 10;
 
         SkinningAnimation outAnim;
@@ -528,12 +526,11 @@ namespace MeshAnimation.Optimization
                     b[3 * frame + 2] = inAnim.Frames[frame].Vertices[v].z;
                 }
 
-                /*
                 // Solve system the first time
                 GeneticOtpimizer o = new GeneticOtpimizer(boneCount, A, b, true);
                 double[] weights = o.SolveForLeastSquares();
-                */
 
+                /*
                 var nnls = new NonNegativeLeastSquares() { MaxIterations = 50 };
                 var regression = nnls.Learn(A, b);
                 var weights = regression.Weights;
@@ -542,6 +539,7 @@ namespace MeshAnimation.Optimization
                 double[] prediction = regression.Transform(A);
                 double error = new SquareLoss(expected: b).Loss(actual: prediction); // should be 0
                 // Console.WriteLine(error);
+                */
 
                 // Retrieve the most significant weights
                 double[] effects = new double[boneCount];
@@ -586,14 +584,14 @@ namespace MeshAnimation.Optimization
                 }
 
                 // Solve again
-                /*
                 o = new GeneticOtpimizer(significantBoneCount, A_sig, b, false);
                 weights = o.SolveForLeastSquares();
-                */
 
+                /*
                 nnls = new NonNegativeLeastSquares() { MaxIterations = 50 };
                 regression = nnls.Learn(A_sig, b);
                 weights = regression.Weights;
+                */
 
                 double sum = 0;
 
