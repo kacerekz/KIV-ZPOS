@@ -21,7 +21,7 @@ namespace MeshAnimation.Animation
         public Frame[] Frames { get; set; }
 
         /// <summary> Bone-vertex weights - array of dictionaries for bones, key is vertex index, value is weight </summary>
-        public ConcurrentDictionary<int, double>[] VertexBoneWeights { get;  set; }
+        public Dictionary<int, double>[] VertexBoneWeights { get;  set; }
 
 
         /// <summary>
@@ -36,10 +36,10 @@ namespace MeshAnimation.Animation
             this.boneCount = boneCount;
             this.Frames = new Frame[frameCount];
             
-            VertexBoneWeights = new ConcurrentDictionary<int, double>[boneCount];
+            VertexBoneWeights = new Dictionary<int, double>[boneCount];
             
             for (int i = 0; i < VertexBoneWeights.Length; i++)
-                VertexBoneWeights[i] = new ConcurrentDictionary<int, double>();
+                VertexBoneWeights[i] = new Dictionary<int, double>();
             
             for (int i = 0; i < frameCount; i++)
                 Frames[i] = new Frame(boneCount);

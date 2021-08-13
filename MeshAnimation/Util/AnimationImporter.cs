@@ -39,13 +39,13 @@ namespace MeshAnimation.Util
             bool loadingFrames = false;
 
             List<Frame> frames = new List<Frame>();
-            List<ConcurrentDictionary<int, double>> weights = new List<ConcurrentDictionary<int, double>>();
+            List<Dictionary<int, double>> weights = new List<Dictionary<int, double>>();
 
             Frame currFrame = null;
             List<Matrix<double>> rotations = null;
             List<Vector<double>> translations = null;
 
-            ConcurrentDictionary<int, double> currWeights = null;
+            Dictionary<int, double> currWeights = null;
             for (int i = 0; i < lines.Length; i++)
             {
                 string[] splitLine = lines[i].Split(' ');
@@ -56,7 +56,7 @@ namespace MeshAnimation.Util
 
                     if (currWeights != null)
                         weights.Add(currWeights);
-                    currWeights = new ConcurrentDictionary<int, double>();
+                    currWeights = new Dictionary<int, double>();
                 }
                 else if (splitLine[0] == "f")
                 {
@@ -112,7 +112,7 @@ namespace MeshAnimation.Util
                         double weight = 0;
                         double.TryParse(splitLine[1], out weight);
 
-                        currWeights.TryAdd(index, weight);
+                        currWeights.Add(index, weight);
                     }
                 }
 

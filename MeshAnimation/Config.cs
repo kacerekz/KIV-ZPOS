@@ -14,12 +14,12 @@ namespace MeshAnimation
         /// <summary>
         /// Mode to launch in
         /// </summary>
-        public Mode mode = Mode.Render;
+        public Mode mode = Mode.Process;
 
         /// <summary>
         /// Path to file / folder
         /// </summary>
-        public string path = @".\jump";// @"D:\moje\school\04\zpos\ZPOS data\constant connectivity\jump";
+        public string path = @"D:\moje\school\04\zpos\ZPOS data\constant connectivity\jump";
 
         /// <summary>
         /// Path to output files - without suffix
