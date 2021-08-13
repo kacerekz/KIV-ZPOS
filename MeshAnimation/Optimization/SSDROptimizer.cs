@@ -351,8 +351,8 @@ namespace MeshAnimation.Optimization
         /// <returns> Returns false if unsuccessfull (aka a bone has been re-initialized too many times), true if successfull  </returns>
         private bool ReInitializeBone(int b)
         {
-            if (initCount > maxInits)
-                return false;
+            //if (initCount > maxInits)
+            //    return false;
 
             Console.WriteLine("Re-init bone " + b);
 

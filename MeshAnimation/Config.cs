@@ -19,7 +19,7 @@ namespace MeshAnimation
         /// <summary>
         /// Path to file / folder
         /// </summary>
-        public string path = @"D:\moje\school\04\zpos\ZPOS data\constant connectivity\test2";
+        public string path = @".\jump";// @"D:\moje\school\04\zpos\ZPOS data\constant connectivity\jump";
 
         /// <summary>
         /// Path to output files - without suffix
@@ -44,7 +44,7 @@ namespace MeshAnimation
         /// <summary>
         /// Scale model by
         /// </summary>
-        public float scaleModel = 1;
+        public float scaleModel = 0.03f;
 
         /// <summary>
         /// Tolerance of bone influence for re-initialization
@@ -55,7 +55,7 @@ namespace MeshAnimation
         /// <summary>
         /// Number of vertices to assign to an re-initialized bone
         /// </summary>
-        public int neighbourCount = 200;
+        public int neighbourCount = 20;
 
         /// <summary>
         /// Use genetic algorithm for weight update, other option is Non-negative least squares
@@ -83,12 +83,12 @@ namespace MeshAnimation
         public int framesPerSecond = 100;
 
         /// <summary>
-        /// Window update frequency
-        /// </summary>
+        /// Window width
+        /// /// </summary>
         public int windowWidth = 800;
 
         /// <summary>
-        /// Window FPS cap
+        /// Window height
         /// </summary>
         public int windowHeight = 600;
 

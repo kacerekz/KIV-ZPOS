@@ -25,7 +25,7 @@ namespace MeshAnimation
     /// </summary>
     class Program
     {
-        static Config config;
+        public static Config config;
 
         /// <summary>
         /// Depending on the mode, the program processes or renders mesh animations
@@ -59,7 +59,7 @@ namespace MeshAnimation
         /// Run in render mode
         /// </summary>
         /// <param name="config">Settings</param>
-        private static void Render(Config config)
+        private static void Process(Config config)
         {
             var window = new OpenTkWindow(config.windowWidth, config.windowHeight, "MeshAnimation");
 
@@ -122,13 +122,13 @@ namespace MeshAnimation
         /// Run in processing mode
         /// </summary>
         /// <param name="config">Settings</param>
-        private static void Process(Config config)
+        private static void Render(Config config)
         {
             var window = new OpenTkWindow(config.windowWidth, config.windowHeight, "MeshAnimation");
 
             // Load animation from file
             SkinningAnimation a = AnimationImporter.ImportSkinningAnimation(config.path);
-            AnimationScene.CreateScene(a);
+            AnimationScene.CreateScene(a, config.scaleModel);
 
             window.Run(config.updatesPerSecond, config.framesPerSecond);
         }
