@@ -19,7 +19,7 @@ namespace MeshAnimation
         /// <summary>
         /// Path to file / folder
         /// </summary>
-        public string path = @".\jump";// @"D:\moje\school\04\zpos\ZPOS data\constant connectivity\jump";
+        public string path = @"C:\Users\Daemon\Desktop\res\with_weighted_centroids\samba_clustering\samba";
 
         /// <summary>
         /// Path to output files - without suffix
@@ -29,12 +29,12 @@ namespace MeshAnimation
         /// <summary>
         /// Number of ssdr iteration
         /// </summary>
-        public int ssdrIterations = 10;
+        public int ssdrIterations = 0;
 
         /// <summary>
         /// Number of bones
         /// </summary>
-        public int boneCount = 9;
+        public int boneCount = 15;
 
         /// <summary>
         /// Number of significant bones
@@ -44,7 +44,7 @@ namespace MeshAnimation
         /// <summary>
         /// Scale model by
         /// </summary>
-        public float scaleModel = 0.03f;
+        public float scaleModel = 1;
 
         /// <summary>
         /// Tolerance of bone influence for re-initialization

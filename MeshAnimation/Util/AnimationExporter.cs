@@ -8,14 +8,11 @@ namespace MeshAnimation.Util
     class AnimationExporter
     {
 
-        /// <summary> Path to folder to save files into </summary>
-        public static string path = ".";
-
         /// <summary>
         /// Export skinned animation
         /// </summary>
         /// <param name="anim"> Animation to export </param>
-        /// <param name="name"> Name of the files </param>
+        /// <param name="name"> Path to the output files, without extensions </param>
         public static void ExportSkinningAnimation(SkinningAnimation anim, string name)
         {
             CultureInfo.CurrentCulture = new CultureInfo("en-US", false);
@@ -61,7 +58,7 @@ namespace MeshAnimation.Util
                 counter++;
             }
 
-            File.WriteAllText(path + "/" + name + ".txt", fileData);
+            File.WriteAllText(name + ".txt", fileData);
         }
 
         private static void ExportObj(ObjLoader restPose, string name)
@@ -74,7 +71,7 @@ namespace MeshAnimation.Util
             for (int i = 0; i < restPose.Indices.Length; i++)
                 fileData += "f " + (restPose.Indices[i].v1 + 1) + " " + (restPose.Indices[i].v2 + 1) + " " + (restPose.Indices[i].v3 + 1) + "\n";
 
-            File.WriteAllText(path + "/" + name + ".obj", fileData);
+            File.WriteAllText(name + ".obj", fileData);
         }
     }
 }

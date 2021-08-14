@@ -107,29 +107,25 @@ namespace MeshAnimation.Optimization
         /// </summary>
         private void ComputeCors()
         {
-            // for each frame separately
-            for (int f = 0; f < inAnim.Frames.Length; f++)
-            {
-                // for each bone in a frame separately
-                for (int b = 0; b < boneCount; b++)
+             // for each bone in a frame separately
+             for (int b = 0; b < boneCount; b++)
+             {
+                double boneWeightSum = ComputeSignificance(b);
+
+                // CoR coordinates
+                Vec3f pstar = new Vec3f();
+                ConcurrentDictionary<int, double> boneWeights = outAnim.VertexBoneWeights[b];
+                foreach (int key in boneWeights.Keys)
                 {
-                    double boneWeightSum = ComputeSignificance(b);
-
-                    // CoR coordinates
-                    Vec3f pstar = new Vec3f();
-                    ConcurrentDictionary<int, double> boneWeights = outAnim.VertexBoneWeights[b];
-                    foreach (int key in boneWeights.Keys)
-                    {
-                        Vec3f multipV = inAnim.RestPose.Vertices[key].Multiplied((float)(boneWeights[key] * boneWeights[key]));
-                        pstar.Add(multipV);
-                    }
-                    pstar.Divide((float)boneWeightSum);
-
-                    // find optimum rotation and translation
-                    Vector<double> pstarV = Vector.Build.Dense(new double[] { pstar.x, pstar.y, pstar.z });
-                    corP[b] = pstarV;
+                    Vec3f multipV = inAnim.RestPose.Vertices[key].Multiplied((float)boneWeights[key]); //Multiplied((float)(boneWeights[key] * boneWeights[key]));
+                    pstar.Add(multipV);
                 }
-            }
+                pstar.Divide((float)boneWeightSum);
+
+                // find optimum rotation and translation
+                Vector<double> pstarV = Vector.Build.Dense(new double[] { pstar.x, pstar.y, pstar.z });
+                corP[b] = pstarV;
+             }
         }
 
         /// <summary>
@@ -479,6 +475,8 @@ namespace MeshAnimation.Optimization
         {
             Console.WriteLine("Weight update");
 
+            ComputeCors();
+
             var oldW = outAnim.VertexBoneWeights;
             for (int b = 0; b < outAnim.VertexBoneWeights.Length; b++)
                 outAnim.VertexBoneWeights[b] = new ConcurrentDictionary<int, double>();
@@ -491,7 +489,7 @@ namespace MeshAnimation.Optimization
 
 
             Parallel.For(0, vertexCount, v => {
-            // for (int v = 0; v < vertexCount; v++)
+            //for (int v = 0; v < vertexCount; v++)
             {
                 MultipleLinearRegression regression = null;
                     NonNegativeLeastSquares nnls = null;

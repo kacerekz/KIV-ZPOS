@@ -84,6 +84,7 @@ namespace MeshAnimation
             op.significantBoneCount = config.significantBoneCount;
             op.maxIterationsGen = config.geneticIterations;
             op.populationSizeGen = config.generationSize;
+            op.neighCount = config.neighbourCount;
 
             SkinningAnimation res = op.Optimize(anim, config.geneticAlgorithm);
 
@@ -128,6 +129,31 @@ namespace MeshAnimation
 
             // Load animation from file
             SkinningAnimation a = AnimationImporter.ImportSkinningAnimation(config.path);
+
+            // Add colours of the mosst significant bone to each vertex
+            Random r = new Random();
+            a.RestPose.Colors = new Vec3f[a.RestPose.Vertices.Length];
+            double[] w = new double[a.RestPose.Vertices.Length];
+            for (int i = 0; i < w.Length; i++) w[i] = double.MinValue;
+            for (int i = 0; i < a.VertexBoneWeights.Length; i++)
+            {
+                float step = 1.0f / (a.VertexBoneWeights.Length + 1);
+                Vec3f color = new Vec3f();
+                color.x = step * i;
+                color.y = (float)r.NextDouble();
+                color.z = (float)r.NextDouble();
+
+                foreach (int v in a.VertexBoneWeights[i].Keys)
+                {
+                    if (a.VertexBoneWeights[i][v] > w[v])
+                    {
+                        a.RestPose.Colors[v] = color;
+                        w[v] = a.VertexBoneWeights[i][v];
+                    }
+
+                }
+            }
+
             AnimationScene.CreateScene(a, config.scaleModel);
 
             window.Run(config.updatesPerSecond, config.framesPerSecond);

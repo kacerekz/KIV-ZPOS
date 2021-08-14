@@ -11,13 +11,10 @@ namespace MeshAnimation.Util
 {
     class AnimationImporter
     {
-        /// <summary> Path to folder the files will be loaded from </summary>
-        public static string path = ".";
-
         /// <summary>
         /// Import a skinned animation
         /// </summary>
-        /// <param name="name"> Name of the files </param>
+        /// <param name="name"> Paht to the files, without extensions </param>
         public static SkinningAnimation ImportSkinningAnimation(string name)
         {
             CultureInfo.CurrentCulture = new CultureInfo("en-US", false);
