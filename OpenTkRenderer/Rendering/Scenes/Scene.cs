@@ -46,7 +46,7 @@ namespace OpenTkRenderer.Rendering.Scenes
         /// </summary>
         public Scene()
         {
-            camera = new FlyCamera(new Vector3(0, 0, 0), new Vector3(0, 0, -1));
+            camera = new FlyCamera(new Vector3(0, 1, -2), new Vector3(0, 0, -1));
             InputManager.Attach(camera);
             MouseManager.Attach(camera);
 
