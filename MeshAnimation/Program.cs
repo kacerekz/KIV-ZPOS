@@ -35,8 +35,8 @@ namespace MeshAnimation
         {
             System.Threading.Thread.CurrentThread.CurrentCulture = new System.Globalization.CultureInfo("en-US");
 
-            var c = new Config();
-            Serialization.Serialize<Config>(c, "./config.xml");
+            // var c = new Config();
+            // Serialization.Serialize<Config>(c, "./config.xml");
 
             var pathToConfigFile = (args.Length == 0) ? "./config.xml" : args[0];
             

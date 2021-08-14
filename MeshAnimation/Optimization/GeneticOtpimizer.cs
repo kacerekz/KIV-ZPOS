@@ -18,8 +18,8 @@ namespace MeshAnimation.Optimization
         public int bestToSkip = 5;
         public int cached = 10;
         
-        public double crossChance = 0.5;
-        public double mutateChance = 0.05;
+        public double crossChance = 0.8;
+        public double mutateChance = 0.1;
         public double maxMutation = 0.2;
         public double maxError = 0.01;
 
