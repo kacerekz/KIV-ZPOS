@@ -13,8 +13,6 @@ namespace OpenTkRenderer.Rendering.Meshes
     /// </summary>
     public class ObjLoader : MeshLoader
     {
-        // TODO beef this up later to read the TVM as well
-
         /// <summary>
         /// Load a simple OBJ from file
         /// </summary>

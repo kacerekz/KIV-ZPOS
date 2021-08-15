@@ -79,8 +79,6 @@ namespace MeshAnimation.Optimization
                 iteration++;
             }
 
-            CorrectRestPose();
-
             return outAnim;
         }
 
@@ -715,62 +713,6 @@ namespace MeshAnimation.Optimization
 
             lastE = currE;
             return false;
-        }
-
-       
-        private void CorrectRestPose()
-        {
-            return;
-
-            // TODO matrix is rank defficient 
-            /*
-            int frameCount = outAnim.Frames.Length;
-            var oldW = outAnim.VertexBoneWeights;
-
-            for (int i = 0; i < outAnim.RestPose.Vertices.Length; i++) {
-                var restVertex = outAnim.RestPose.Vertices[i].ToVector();
-                var A = new double[3 * frameCount][];
-                var b = new double[3 * frameCount];
-
-                for (int frame = 0; frame < 3 * frameCount; frame++)
-                {
-                    A[frame] = new double[boneCount];
-                }
-
-                for (int frame = 0; frame < frameCount; frame++)
-                {
-                    // Fill A
-                    for (int row = 0; row < 3; row++)
-                    {
-                        for (int bone = 0; bone < boneCount; bone++)
-                        {
-                            double w = 0;
-                            if (oldW[bone].ContainsKey(i))
-                                w = oldW[bone][i];
-
-                            Matrix<double> rotation = outAnim.Frames[frame].BoneRotation[bone];
-                            Vector<double> translation = outAnim.Frames[frame].BoneTranslation[bone];
-
-                            Vector<double> rotated = Vector<double>.Build.Dense(new double[] { rotation[row, 0], rotation[row, 1], rotation[row, 2] });
-
-                            A[3 * frame + 1][0] += w * (rotated[0] + translation[0]);
-                            A[3 * frame + 2][1] += w * (rotated[1] + translation[1]);
-                            A[3 * frame + 0][2] += w * (rotated[2] + translation[2]);
-                        }
-                    }
-
-                    // Fill B
-                    b[3 * frame + 0] = inAnim.Frames[frame].Vertices[i].x;
-                    b[3 * frame + 1] = inAnim.Frames[frame].Vertices[i].y;
-                    b[3 * frame + 2] = inAnim.Frames[frame].Vertices[i].z;
-                }
-
-                OrdinaryLeastSquares ols = new OrdinaryLeastSquares();
-                var r = ols.Learn(A, b);
-                double[] res = r.Weights;
-            }
-            */
-
         }
 
     }
